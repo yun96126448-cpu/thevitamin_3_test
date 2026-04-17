@@ -1,0 +1,37 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #1a1a1a;
+  --brand-green: #7ABF3A;
+  --brand-green-dark: #1F6B2A;
+  --brand-green-light: #e8f5d5;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-brand-green: var(--brand-green);
+  --color-brand-green-dark: var(--brand-green-dark);
+  --color-brand-green-light: var(--brand-green-light);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  line-height: 1.5; /* 150% */
+}
+
+/* 큰 글자 크기: 180% 줄간격 */
+h1, h2, h3, h4, h5, h6,
+.text-3xl, .text-4xl, .text-5xl, .text-6xl, .text-7xl,
+.text-2xl {
+  line-height: 1.8; /* 180% */
+}
+
+/* 페이지 제목, 섹션 헤더 */
+.text-lg, .text-xl {
+  line-height: 1.6;
+}
