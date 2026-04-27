@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 interface HeroSectionProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
   mobileTitle?: string;
-  subtitle: string;
+  subtitle: React.ReactNode;
   primaryButtonText: string;
   primaryButtonHref: string;
   secondaryButtonText: string;
@@ -78,7 +78,7 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
           animate="visible"
         >
           <motion.h1
-            className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl text-white whitespace-pre-line"
+            className="text-5xl font-black sm:text-6xl lg:text-[72px] leading-[0.8] text-white whitespace-pre-line"
             variants={itemVariants}
           >
             {mobileTitle ? (

@@ -44,7 +44,7 @@ export default function NoticesPage() {
       <div
         className="hero-section"
         style={{
-          background: "linear-gradient(150deg, #4a9e28 0%, #1F6B2A 50%, #0a2e10 100%)",
+          background: "linear-gradient(to bottom, #1F6B2A 0%, #4a9e28 40%, #ffffff 100%)",
           display: "flex",
           alignItems: "center",
           overflow: "hidden",
@@ -58,7 +58,7 @@ export default function NoticesPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: "easeOut" }}
               className="hero-title"
-              style={{ fontWeight: 700, color: "#ffffff", lineHeight: 1.2, marginBottom: "20px" }}
+              style={{ fontWeight: 900, color: "#ffffff", lineHeight: 1.05, marginBottom: "20px", letterSpacing: 0 }}
             >
               공지사항
             </motion.h1>
@@ -198,7 +198,7 @@ export default function NoticesPage() {
         .hero-section { height: 480px; }
         .hero-inner { flex-direction: row; }
         .hero-text { text-align: left; }
-        .hero-title { font-size: 52px; }
+        .hero-title { font-size: 72px; }
         .hero-subtitle { font-size: 20px; }
         .hero-img { height: 460px; width: auto; }
 
@@ -206,7 +206,7 @@ export default function NoticesPage() {
           .hero-section { height: auto; }
           .hero-inner { flex-direction: column-reverse; padding: 0 !important; align-items: center; }
           .hero-text { text-align: center; padding: 32px 24px 40px; }
-          .hero-title { font-size: 32px; }
+          .hero-title { font-size: 48px; }
           .hero-subtitle { font-size: 16px; }
           .hero-subtitle-pc { display: none; }
           .hero-subtitle-mobile { display: inline; }
