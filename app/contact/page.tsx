@@ -1,152 +1,228 @@
 "use client";
 
 import { useState } from "react";
-import { Phone, MapPin, Printer, CheckCircle2 } from "lucide-react";
+import { CheckCircle2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const serviceOptions = ["방문요양", "가족요양", "복지용구", "간병인협회", "기타"];
+const gradeOptions = [
+  "1등급",
+  "2등급",
+  "3등급",
+  "4등급",
+  "5등급",
+  "인지지원등급",
+  "등급 미정 / 신청 예정",
+  "해당 없음",
+];
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     phone: "",
+    email: "",
     serviceType: "",
+    grade: "",
     message: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const resetForm = () =>
+    setForm({ name: "", phone: "", email: "", serviceType: "", grade: "", message: "" });
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError("");
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          topics: [form.serviceType, form.grade].filter(Boolean),
+          message: form.message,
+        }),
+      });
+      if (!res.ok) throw new Error("전송 실패");
+      setSubmitted(true);
+    } catch {
+      setError("문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="bg-brand-green-light border-b border-gray-200 py-12">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">고객 문의</h1>
-          <p className="mt-2 text-gray-600">
-            궁금한 점이 있으시면 언제든지 문의해 주세요. 신속하게 답변 드리겠습니다.
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
-          {/* 문의 폼 */}
-          <div className="lg:col-span-3">
-            {submitted ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <CheckCircle2 size={56} className="text-brand-green mb-4" />
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">문의가 접수되었습니다</h2>
-                <p className="text-gray-600 mb-6">
-                  담당자 확인 후 입력하신 연락처로 빠르게 연락드리겠습니다.
-                </p>
-                <Button onClick={() => { setSubmitted(false); setForm({ name: "", phone: "", serviceType: "", message: "" }); }}>
-                  새 문의 작성
-                </Button>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="space-y-5">
-                <h2 className="text-xl font-bold text-gray-900 mb-4">문의 양식</h2>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    이름 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={form.name}
-                    onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="홍길동"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    연락처 <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                    placeholder="010-0000-0000"
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">문의 유형</label>
-                  <select
-                    value={form.serviceType}
-                    onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent bg-white"
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
+        <div className="flex flex-col lg:flex-row lg:items-start gap-12 lg:gap-20">
+          {/* 문의 폼 카드 */}
+          <div className="order-2 lg:order-1 w-full lg:w-[46%] shrink-0">
+            <div className="border border-gray-200 rounded-2xl p-6 sm:p-8">
+              {submitted ? (
+                <div className="min-h-[480px] flex flex-col items-center justify-center text-center">
+                  <CheckCircle2 size={52} className="text-brand-green mb-4" />
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">
+                    문의가 접수되었습니다
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-6 max-w-xs">
+                    담당자 확인 후 입력하신 연락처로 빠르게 연락드리겠습니다.
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setSubmitted(false);
+                      resetForm();
+                    }}
+                    variant="outline"
                   >
-                    <option value="">유형 선택</option>
-                    {serviceOptions.map((opt) => (
-                      <option key={opt} value={opt}>{opt}</option>
-                    ))}
-                  </select>
+                    새 문의 작성
+                  </Button>
                 </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-2">
+                      성함
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      placeholder="홍길동"
+                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition-colors"
+                    />
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    문의 내용 <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    required
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    placeholder="문의 내용을 자세히 적어주세요."
-                    rows={5}
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green focus:border-transparent resize-none"
-                  />
-                </div>
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-2">
+                      연락처
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      placeholder="010-0000-0000"
+                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition-colors"
+                    />
+                  </div>
 
-                <Button type="submit" size="lg" className="w-full">
-                  문의 보내기
-                </Button>
-              </form>
-            )}
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-2">
+                      이메일 (선택)
+                    </label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
+                      placeholder="example@email.com"
+                      className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition-colors"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-2">
+                      문의 서비스
+                    </label>
+                    <div className="relative">
+                      <select
+                        required
+                        value={form.serviceType}
+                        onChange={(e) => setForm({ ...form, serviceType: e.target.value })}
+                        className="w-full appearance-none border border-gray-200 rounded-lg px-4 py-3 pr-10 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition-colors"
+                      >
+                        <option value="">서비스를 선택해주세요</option>
+                        {serviceOptions.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-2">
+                      장기요양 등급 (선택)
+                    </label>
+                    <div className="relative">
+                      <select
+                        value={form.grade}
+                        onChange={(e) => setForm({ ...form, grade: e.target.value })}
+                        className="w-full appearance-none border border-gray-200 rounded-lg px-4 py-3 pr-10 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-brand-green/30 focus:border-brand-green transition-colors"
+                      >
+                        <option value="">등급을 선택해주세요</option>
+                        {gradeOptions.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown
+                        size={16}
+                        className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-gray-50 p-6">
+                    <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-3">
+                      문의 내용
+                    </label>
+                    <textarea
+                      required
+                      rows={6}
+                      value={form.message}
+                      onChange={(e) => setForm({ ...form, message: e.target.value })}
+                      placeholder="어떤 도움이 필요하신지 자세히 남겨주시면 더 빠르고 정확하게 안내해 드릴게요."
+                      className="w-full bg-transparent resize-none text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none leading-relaxed"
+                    />
+                  </div>
+
+                  {error && <p className="text-sm text-red-500">{error}</p>}
+
+                  <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+                    {submitting ? "전송 중..." : "문의 보내기"}
+                  </Button>
+                </form>
+              )}
+            </div>
           </div>
 
-          {/* 연락처 정보 */}
-          <div className="lg:col-span-2 space-y-6">
-            <h2 className="text-xl font-bold text-gray-900">연락처</h2>
-            <div className="bg-gray-50 rounded-2xl p-6 space-y-4">
-              <div className="flex items-start gap-3">
-                <MapPin size={18} className="text-brand-green mt-0.5 shrink-0" />
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5">주소</p>
-                  <p className="text-sm text-gray-800">전라남도 목포시 삼일로 6-1 2층</p>
-                </div>
+          {/* 소개 + 이미지 */}
+          <div className="order-1 lg:order-2 w-full lg:flex-1 flex flex-col gap-10 lg:gap-14">
+            <header className="flex flex-col gap-8">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.1] [text-wrap:balance]">
+                고객 문의
+              </h1>
+              <div className="relative pl-6">
+                <span className="absolute left-0 top-0 h-full w-[3px] bg-brand-green rounded-full" />
+                <p className="text-gray-600 text-base sm:text-lg leading-relaxed max-w-md">
+                  전화 상담은 평균 5분, 방문 상담은 사전 예약 후 진행됩니다. 어르신과
+                  가족분 모두에게 꼭 맞는 돌봄 계획을 함께 찾아드립니다.
+                </p>
               </div>
-              <div className="flex items-center gap-3">
-                <Phone size={18} className="text-brand-green shrink-0" />
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5">전화</p>
-                  <a href="tel:061-242-3536" className="text-sm font-semibold text-brand-green hover:underline">
-                    061-242-3536
-                  </a>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <Printer size={18} className="text-brand-green shrink-0" />
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5">팩스</p>
-                  <p className="text-sm text-gray-800">061-892-7106</p>
-                </div>
-              </div>
-            </div>
+            </header>
 
-            <div className="bg-brand-green-light rounded-2xl p-5">
-              <p className="text-sm font-semibold text-gray-900 mb-1">운영 시간</p>
-              <p className="text-sm text-gray-700">평일 09:00 ~ 18:00</p>
-              <p className="text-xs text-gray-500 mt-1">* 주말 및 공휴일 휴무</p>
-            </div>
+            <section>
+              <div className="relative w-full aspect-square rounded-[24px] lg:rounded-[30px] overflow-hidden bg-brand-green-light">
+                <img
+                  src="/방문요양_home_clean.png"
+                  alt="더비타민 재가복지센터"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+            </section>
           </div>
         </div>
       </div>

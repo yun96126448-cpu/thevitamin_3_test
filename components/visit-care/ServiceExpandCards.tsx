@@ -50,7 +50,7 @@ export default function ServiceExpandCards() {
       </div>
 
       {/* PC: 기존 hover 확장 */}
-      <div className="hidden md:flex gap-3 h-[280px]">
+      <div className="hidden md:flex gap-3 h-[220px]">
         {serviceItems.map((item, i) => {
           const isActive = activeIndex === i;
           return (

@@ -9,7 +9,7 @@ const BG_COLORS = ["#f0eedc","#dce8f5","#e8dcf5","#dcf5e8","#f5e8dc","#f5dcdc"];
 const DRAFT_KEY = "thevitamin_notice_draft";
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
 
-type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string };
+type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
 type FormState = { category: string; title: string; content: string; bgImage: string; repImage: string };
 
 const EMPTY_FORM: FormState = { category: "공지", title: "", content: "", bgImage: "", repImage: "" };
@@ -18,13 +18,13 @@ function isBgImageUrl(val: string) {
   return val.startsWith("data:") || val.startsWith("http") || val.startsWith("/");
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+async function uploadImage(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: formData });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "이미지 업로드에 실패했습니다.");
+  return data.url as string;
 }
 
 const MOBILE_PAGE_SIZE = 6;
@@ -41,6 +41,7 @@ export default function NoticesPage() {
   const isAdmin = ADMIN_EMAILS.includes(session?.user?.email ?? "");
 
   const [notices, setNotices] = useState<Notice[]>([]);
+  const [pendingDrafts, setPendingDrafts] = useState<Notice[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -56,6 +57,9 @@ export default function NoticesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [hasDraft, setHasDraft] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [draftVersion, setDraftVersion] = useState(0);
+  const [uploadingBg, setUploadingBg] = useState(false);
+  const [uploadingRep, setUploadingRep] = useState(false);
 
   useEffect(() => {
     fetch("/api/notices")
@@ -63,6 +67,53 @@ export default function NoticesPage() {
       .then((data) => { setNotices(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  const fetchPendingDrafts = () => {
+    fetch("/api/notices?pending=1")
+      .then((r) => r.json())
+      .then((data) => setPendingDrafts(Array.isArray(data) ? data : []))
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    if (isAdmin) fetchPendingDrafts();
+  }, [isAdmin]);
+
+  const handleReview = async (notice: Notice, action: "publish" | "reject") => {
+    try {
+      if (action === "publish") {
+        const res = await fetch("/api/notices", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: notice.id, status: "published" }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          showToast(err?.error ?? "게시 승인에 실패했습니다.");
+          return;
+        }
+        showToast("게시되었습니다!");
+        const updated = await fetch("/api/notices").then((r) => r.json());
+        if (Array.isArray(updated)) setNotices(updated);
+      } else {
+        const res = await fetch("/api/notices", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: notice.id }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          showToast(err?.error ?? "반려에 실패했습니다.");
+          return;
+        }
+        showToast("초안을 삭제했습니다.");
+      }
+      setSelectedNotice(null);
+      fetchPendingDrafts();
+    } catch {
+      showToast("네트워크 오류로 처리하지 못했습니다.");
+    }
+  };
 
   useEffect(() => {
     setHasDraft(!!localStorage.getItem(DRAFT_KEY));
@@ -96,6 +147,7 @@ export default function NoticesPage() {
     setEditingNotice(null);
     setForm(EMPTY_FORM);
     setFormError("");
+    setDraftVersion((v) => v + 1); // 이전 작성 중이던 내용이 에디터에 남지 않도록 리마운트
     setShowModal(true);
   };
 
@@ -117,19 +169,23 @@ export default function NoticesPage() {
 
   const handleDelete = async (notice: Notice) => {
     if (!window.confirm(`"${notice.title}" 공지를 삭제할까요?\n삭제하면 복구할 수 없습니다.`)) return;
-    const res = await fetch("/api/notices", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: notice.id }),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      showToast(err.error ?? "삭제에 실패했습니다.");
-      return;
+    try {
+      const res = await fetch("/api/notices", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: notice.id }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => null);
+        showToast(err?.error ?? "삭제에 실패했습니다.");
+        return;
+      }
+      setNotices((prev) => prev.filter((n) => n.id !== notice.id));
+      setSelectedNotice(null);
+      showToast("공지가 삭제되었습니다.");
+    } catch {
+      showToast("네트워크 오류로 삭제에 실패했습니다.");
     }
-    setNotices((prev) => prev.filter((n) => n.id !== notice.id));
-    setSelectedNotice(null);
-    showToast("공지가 삭제되었습니다.");
   };
 
   const loadDraft = () => {
@@ -139,6 +195,7 @@ export default function NoticesPage() {
       const saved = JSON.parse(raw) as FormState;
       setForm(saved);
       setFormError("");
+      setDraftVersion((v) => v + 1); // 노션 에디터를 리마운트시켜 불러온 본문을 반영
     } catch {
       // 손상된 임시저장 무시
     }
@@ -165,67 +222,69 @@ export default function NoticesPage() {
     setSubmitting(true);
     const thumbnail = extractFirstImage(form.content);
 
-    if (editingNotice) {
-      const bg = form.bgImage || (isBgImageUrl(editingNotice.bg) ? "" : editingNotice.bg) || BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
-      // 수정
-      const res = await fetch("/api/notices", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: editingNotice.id,
-          category: form.category,
-          title: form.title.trim(),
-          content: form.content || null,
-          thumbnail: form.repImage || null,
-          bg,
-        }),
-      });
+    try {
+      if (editingNotice) {
+        const bg = form.bgImage || (isBgImageUrl(editingNotice.bg) ? "" : editingNotice.bg) || BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
+        // 수정
+        const res = await fetch("/api/notices", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: editingNotice.id,
+            category: form.category,
+            title: form.title.trim(),
+            content: form.content || null,
+            thumbnail: form.repImage || null,
+            bg,
+          }),
+        });
 
-      setSubmitting(false);
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          setFormError(err?.error ?? "수정에 실패했습니다.");
+          return;
+        }
 
-      if (!res.ok) {
-        const err = await res.json();
-        setFormError(err.error ?? "수정에 실패했습니다.");
-        return;
+        const updated = await res.json();
+        setNotices((prev) => prev.map((n) => n.id === updated.id ? updated : n));
+        setShowModal(false);
+        setEditingNotice(null);
+        showToast("공지가 수정되었습니다!");
+      } else {
+        // 새 글 등록
+        const bg = form.bgImage || BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
+
+        const res = await fetch("/api/notices", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            category: form.category,
+            title: form.title.trim(),
+            content: form.content || null,
+            thumbnail: form.repImage || thumbnail || null,
+            bg,
+            date: todayStr(),
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => null);
+          setFormError(err?.error ?? "등록에 실패했습니다.");
+          return;
+        }
+
+        const newNotice = await res.json();
+        setNotices((prev) => [newNotice, ...prev]);
+        localStorage.removeItem(DRAFT_KEY);
+        setHasDraft(false);
+        setPage(0);
+        setShowModal(false);
+        showToast("공지가 등록되었습니다!");
       }
-
-      const updated = await res.json();
-      setNotices((prev) => prev.map((n) => n.id === updated.id ? updated : n));
-      setShowModal(false);
-      setEditingNotice(null);
-      showToast("공지가 수정되었습니다!");
-    } else {
-      // 새 글 등록
-      const bg = form.bgImage || BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
-
-      const res = await fetch("/api/notices", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          category: form.category,
-          title: form.title.trim(),
-          content: form.content || null,
-          thumbnail: form.repImage || thumbnail || null,
-          bg,
-          date: todayStr(),
-        }),
-      });
-
+    } catch {
+      setFormError("네트워크 오류로 처리하지 못했습니다. 잠시 후 다시 시도해주세요.");
+    } finally {
       setSubmitting(false);
-
-      if (!res.ok) {
-        const err = await res.json();
-        setFormError(err.error ?? "등록에 실패했습니다.");
-        return;
-      }
-
-      const newNotice = await res.json();
-      setNotices((prev) => [newNotice, ...prev]);
-      localStorage.removeItem(DRAFT_KEY);
-      setHasDraft(false);
-      setPage(0);
-      setShowModal(false);
-      showToast("공지가 등록되었습니다!");
     }
   };
 
@@ -303,10 +362,12 @@ export default function NoticesPage() {
                     const res = await fetch("/api/auto-post");
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.error);
-                    showToast(`완료! "${data.title}" 등록됨`);
-                    const updated = await fetch("/api/notices").then((r) => r.json());
-                    if (Array.isArray(updated)) setNotices(updated);
-                    setPage(0);
+                    if (data.status === "draft") {
+                      showToast(`초안 생성 완료! "${data.title}" — 검토 대기 목록에서 승인해주세요.`);
+                      fetchPendingDrafts();
+                    } else {
+                      showToast(data.error ?? "발행할 자료를 찾지 못했습니다.");
+                    }
                   } catch (e) {
                     showToast(`실패: ${e instanceof Error ? e.message : "오류"}`);
                   }
@@ -358,6 +419,40 @@ export default function NoticesPage() {
             </div>
           )}
         </div>
+
+        {isAdmin && pendingDrafts.length > 0 && (
+          <div style={{ marginBottom: "32px", background: "#fffbea", border: "1.5px solid #f0d876", borderRadius: "16px", padding: "16px 20px" }}>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "#7a5f00", margin: "0 0 10px" }}>
+              🕘 검토 대기 중인 AI 초안 ({pendingDrafts.length})
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {pendingDrafts.map((d) => (
+                <div key={d.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", background: "#ffffff", borderRadius: "10px", padding: "10px 14px" }}>
+                  <span
+                    onClick={() => setSelectedNotice(d)}
+                    style={{ fontSize: "14px", fontWeight: 600, color: "#191f28", cursor: "pointer", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                  >
+                    [{d.category}] {d.title}
+                  </span>
+                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
+                    <button
+                      onClick={() => handleReview(d, "publish")}
+                      style={{ height: "32px", padding: "0 14px", borderRadius: "16px", border: "none", background: "#1F6B2A", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      승인·게시
+                    </button>
+                    <button
+                      onClick={() => handleReview(d, "reject")}
+                      style={{ height: "32px", padding: "0 14px", borderRadius: "16px", border: "1px solid #e5e8eb", background: "#ffffff", color: "#8b95a1", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      반려
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div style={{ textAlign: "center", padding: "80px 0", color: "#8b95a1", fontSize: "15px" }}>
@@ -476,21 +571,40 @@ export default function NoticesPage() {
                 )}
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.18) 100%)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
-                  {session?.user?.email && session.user.email === selectedNotice.author_email && (
-                    <button
-                      onClick={() => openEditModal(selectedNotice)}
-                      style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(0,0,0,0.4)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
-                    >
-                      수정
-                    </button>
-                  )}
-                  {isAdmin && (
-                    <button
-                      onClick={() => handleDelete(selectedNotice)}
-                      style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(220,38,38,0.75)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
-                    >
-                      삭제
-                    </button>
+                  {isAdmin && selectedNotice.status === "draft" ? (
+                    <>
+                      <button
+                        onClick={() => handleReview(selectedNotice, "publish")}
+                        style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(31,107,42,0.9)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                      >
+                        승인·게시
+                      </button>
+                      <button
+                        onClick={() => handleReview(selectedNotice, "reject")}
+                        style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(220,38,38,0.75)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                      >
+                        반려
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {session?.user?.email && session.user.email === selectedNotice.author_email && (
+                        <button
+                          onClick={() => openEditModal(selectedNotice)}
+                          style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(0,0,0,0.4)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                        >
+                          수정
+                        </button>
+                      )}
+                      {isAdmin && (
+                        <button
+                          onClick={() => handleDelete(selectedNotice)}
+                          style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(220,38,38,0.75)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </>
                   )}
                   <button
                     onClick={() => setSelectedNotice(null)}
@@ -611,8 +725,25 @@ export default function NoticesPage() {
                 {/* 배경 이미지 */}
                 <div style={{ marginBottom: "16px" }}>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8b95a1", marginBottom: "8px" }}>배경 이미지 <span style={{ fontWeight: 400, color: "#b0b8c1" }}>— 카드 전체 배경에 표시</span></label>
-                  <input ref={bgImageRef} type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const b64 = await fileToBase64(f); setForm((prev) => ({ ...prev, bgImage: b64 })); } e.target.value = ""; }} />
-                  {form.bgImage ? (
+                  <input ref={bgImageRef} type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!f) return;
+                    setUploadingBg(true);
+                    try {
+                      const url = await uploadImage(f);
+                      setForm((prev) => ({ ...prev, bgImage: url }));
+                    } catch (err) {
+                      showToast(err instanceof Error ? err.message : "이미지 업로드에 실패했습니다.");
+                    } finally {
+                      setUploadingBg(false);
+                    }
+                  }} />
+                  {uploadingBg ? (
+                    <div style={{ width: "100%", height: "120px", borderRadius: "12px", background: "#fafbfc", border: "1.5px dashed #d0d7de", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", color: "#8b95a1" }}>
+                      업로드 중...
+                    </div>
+                  ) : form.bgImage ? (
                     <div style={{ position: "relative", width: "100%", height: "120px", borderRadius: "12px", overflow: "hidden" }}>
                       <img src={form.bgImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       <button onClick={() => setForm((f) => ({ ...f, bgImage: "" }))} style={{ position: "absolute", top: "8px", right: "8px", width: "26px", height: "26px", borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
@@ -629,8 +760,25 @@ export default function NoticesPage() {
                 {/* 대표 이미지 */}
                 <div style={{ marginBottom: "16px" }}>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8b95a1", marginBottom: "8px" }}>대표 이미지 <span style={{ fontWeight: 400, color: "#b0b8c1" }}>— 배경 위에 작게 표시</span></label>
-                  <input ref={repImageRef} type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const b64 = await fileToBase64(f); setForm((prev) => ({ ...prev, repImage: b64 })); } e.target.value = ""; }} />
-                  {form.repImage ? (
+                  <input ref={repImageRef} type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    e.target.value = "";
+                    if (!f) return;
+                    setUploadingRep(true);
+                    try {
+                      const url = await uploadImage(f);
+                      setForm((prev) => ({ ...prev, repImage: url }));
+                    } catch (err) {
+                      showToast(err instanceof Error ? err.message : "이미지 업로드에 실패했습니다.");
+                    } finally {
+                      setUploadingRep(false);
+                    }
+                  }} />
+                  {uploadingRep ? (
+                    <div style={{ width: "110px", height: "110px", borderRadius: "12px", background: "#fafbfc", border: "1.5px dashed #d0d7de", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", color: "#8b95a1" }}>
+                      업로드 중...
+                    </div>
+                  ) : form.repImage ? (
                     <div style={{ position: "relative", display: "inline-block" }}>
                       <img src={form.repImage} alt="" style={{ width: "110px", height: "110px", objectFit: "cover", borderRadius: "12px", border: "2px solid #e5e8eb", display: "block" }} />
                       <button onClick={() => setForm((f) => ({ ...f, repImage: "" }))} style={{ position: "absolute", top: "6px", right: "6px", width: "22px", height: "22px", borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: "12px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
@@ -650,7 +798,7 @@ export default function NoticesPage() {
                     내용 <span style={{ fontWeight: 400, color: "#b0b8c1" }}>— 툴바에서 🖼 사진 버튼으로 원하는 위치에 사진 삽입</span>
                   </label>
                   <NotionEditor
-                    key={editingNotice ? `edit-${editingNotice.id}` : "new"}
+                    key={editingNotice ? `edit-${editingNotice.id}` : `new-${draftVersion}`}
                     initialContent={form.content}
                     onChange={(html) => setForm((f) => ({ ...f, content: html }))}
                   />

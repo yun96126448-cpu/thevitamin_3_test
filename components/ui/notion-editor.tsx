@@ -64,14 +64,19 @@ export default function NotionEditor({ onChange, initialContent }: NotionEditorP
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files ?? []);
-    for (const file of files) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        editor.chain().focus().setImage({ src: reader.result as string }).run();
-      };
-      reader.readAsDataURL(file);
-    }
     e.target.value = "";
+    for (const file of files) {
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "이미지 업로드에 실패했습니다.");
+        editor.chain().focus().setImage({ src: data.url }).run();
+      } catch (err) {
+        alert(err instanceof Error ? err.message : "이미지 업로드에 실패했습니다.");
+      }
+    }
   };
 
   const Sep = () => (

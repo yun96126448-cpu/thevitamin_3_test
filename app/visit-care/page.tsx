@@ -1,7 +1,11 @@
+"use client";
+
+import { useEffect } from "react";
 import Link from "next/link";
-import { Phone, ClipboardList, Award, FileCheck2, PlayCircle } from "lucide-react";
+import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ServiceExpandCards from "@/components/visit-care/ServiceExpandCards";
+import ApplyStepsAccordion from "@/components/visit-care/ApplyStepsAccordion";
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",
@@ -10,14 +14,29 @@ const targets = [
   "치매, 중풍, 파킨슨 등 거동이 불편한 어르신",
 ];
 
-const steps = [
-  { step: "01", title: "장기요양 신청", desc: "국민건강보험공단에 장기요양인정 신청", Icon: ClipboardList },
-  { step: "02", title: "등급 판정", desc: "방문조사 후 1~5등급 또는 인지지원등급 판정", Icon: Award },
-  { step: "03", title: "센터 계약", desc: "더비타민 재가복지센터와 서비스 이용 계약 체결", Icon: FileCheck2 },
-  { step: "04", title: "서비스 시작", desc: "요양보호사 배정 후 서비스 시작", Icon: PlayCircle },
-];
-
 export default function VisitCare() {
+  // 데스크톱에서만 특정 섹션 근처에서 부드럽게 화면에 걸리도록 스크롤 스냅 적용
+  useEffect(() => {
+    const html = document.documentElement;
+    const mql = window.matchMedia("(min-width: 768px)");
+
+    const apply = () => {
+      if (mql.matches) {
+        html.classList.add("snap-y", "snap-proximity");
+      } else {
+        html.classList.remove("snap-y", "snap-proximity");
+      }
+    };
+
+    apply();
+    mql.addEventListener("change", apply);
+
+    return () => {
+      mql.removeEventListener("change", apply);
+      html.classList.remove("snap-y", "snap-proximity");
+    };
+  }, []);
+
   return (
     <div className="min-h-screen">
       {/* 히어로 - 클린 화이트 */}
@@ -48,70 +67,64 @@ export default function VisitCare() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-        {/* 서비스 대상 */}
-        <section>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 tracking-[0]">
-            서비스 대상
-          </h2>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {targets.map((t, i) => (
-              <li
-                key={i}
-                className="flex flex-col gap-8 bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900 shrink-0">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                <span className="text-gray-700 text-sm sm:text-base leading-relaxed tracking-[0]">{t}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {/* 서비스 대상 + 제공 서비스 내용 : 화면 한 페이지 꽉 채우는 스냅 섹션 */}
+        <section className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:scroll-mt-16 md:snap-start md:justify-center md:gap-8">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
+              서비스 대상
+            </h2>
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {targets.map((t, i) => (
+                <li
+                  key={i}
+                  className="flex flex-col gap-8 md:gap-4 bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900 shrink-0">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span className="text-gray-700 text-sm sm:text-base leading-relaxed tracking-[0]">{t}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-        {/* 제공 서비스 */}
-        <section>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6">
-            제공 서비스 내용
-          </h2>
-          <ServiceExpandCards />
-        </section>
-
-        {/* 신청 방법 */}
-        <section>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6">신청 방법</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-5">
-            {steps.map((s, i) => (
-              <div key={s.step} className="flex flex-col gap-4">
-                <div className="bg-brand-green-light rounded-2xl h-44 flex items-center justify-center">
-                  <s.Icon size={52} className="text-brand-green opacity-50" />
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-7 h-7 rounded-full bg-gray-900 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
-                    {i + 1}
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-900 text-sm leading-snug mb-1">{s.title}</p>
-                    <p className="text-xs text-gray-500 leading-relaxed">{s.desc}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
+              제공 서비스 내용
+            </h2>
+            <ServiceExpandCards />
           </div>
         </section>
 
+        {/* 신청 방법 : 화면 한 페이지 꽉 채우는 스냅 섹션 */}
+        <section className="md:min-h-[calc(100vh-4rem)] md:scroll-mt-16 md:snap-start md:flex md:flex-col md:justify-center">
+          <ApplyStepsAccordion />
+        </section>
+
         {/* CTA */}
-        <section className="bg-brand-green rounded-2xl p-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-2">지금 바로 상담받으세요</h2>
-          <p className="mb-6 text-white/90">
+        <section className="md:snap-start md:scroll-mt-16 py-20 sm:py-28 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
+            궁금하신 점이 있으신가요?
+          </h2>
+          <p className="mb-10 text-gray-500 text-base sm:text-lg">
             방문요양 서비스에 관한 자세한 내용은 전화 또는 온라인으로 문의해 주세요.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild variant="secondary" size="lg">
+            <Button
+              asChild
+              size="lg"
+              className="bg-brand-green text-white rounded-full px-8 hover:bg-brand-green-dark"
+            >
               <a href="tel:061-242-3536" className="flex items-center gap-2">
                 <Phone size={16} /> 061-242-3536
               </a>
             </Button>
-            <Button asChild size="lg" className="bg-white text-brand-green-dark hover:bg-gray-100">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="rounded-full px-8 border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
               <Link href="/contact">온라인 문의하기</Link>
             </Button>
           </div>

@@ -4,10 +4,31 @@ import { supabase, supabaseAdmin } from "@/lib/supabase";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const pending = new URL(req.url).searchParams.get("pending");
+
+  if (pending) {
+    // 관리자 전용: AI 초안 등 검토 대기 중인 글 목록
+    const session = await auth();
+    const email = session?.user?.email ?? "";
+    if (!ADMIN_EMAILS.includes(email)) {
+      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
+    }
+
+    const { data, error } = await supabaseAdmin
+      .from("notices")
+      .select("*")
+      .eq("status", "draft")
+      .order("created_at", { ascending: false });
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  }
+
   const { data, error } = await supabase
     .from("notices")
     .select("*")
+    .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
@@ -48,7 +69,25 @@ export async function PATCH(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { id, category, title, content, thumbnail, bg } = body;
+  const { id, status } = body;
+
+  // 상태 변경만 요청한 경우 (AI 초안 승인/반려) — 관리자 전용
+  if (status && Object.keys(body).length === 2) {
+    if (!ADMIN_EMAILS.includes(email)) {
+      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
+    }
+    const { data, error } = await supabaseAdmin
+      .from("notices")
+      .update({ status })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(data);
+  }
+
+  const { category, title, content, thumbnail, bg } = body;
 
   if (!title?.trim()) {
     return NextResponse.json({ error: "제목을 입력해주세요." }, { status: 400 });
