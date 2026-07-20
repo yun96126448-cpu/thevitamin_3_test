@@ -1,135 +1,140 @@
 import Link from "next/link";
-import { Phone, MessageCircle, UserCheck, ShieldCheck, Clock, Award } from "lucide-react";
+import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Reveal from "@/components/shared/Reveal";
+import TargetsGrid from "@/components/shared/TargetsGrid";
+import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
+import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
 
-const features = [
+const targets = [
+  "병원 입원 중 24시간 간병이 필요한 환자",
+  "퇴원 후 가정에서 회복 돌봄이 필요한 어르신",
+  "보호자 부재 시 단기 간병이 필요한 경우",
+  "치매 등 전문적인 돌봄이 필요한 어르신",
+];
+
+const serviceCategories = [
   {
-    icon: UserCheck,
-    title: "검증된 전문 간병인",
-    desc: "체계적인 교육과 검증을 거친 전문 간병인을 연결해드립니다.",
+    num: "01",
+    category: "전문 간병 인력",
+    items: ["체계적인 교육 이수", "신원조회 및 자격 검증", "24시간 긴급 배정 가능"],
   },
   {
-    icon: ShieldCheck,
-    title: "안전한 서비스",
-    desc: "간병인 신원조회 및 자격 확인으로 안전한 서비스를 보장합니다.",
+    num: "02",
+    category: "서비스 유형",
+    items: ["병원 간병", "가정 간병", "단기 간병", "치매 전문 간병"],
   },
   {
-    icon: Clock,
-    title: "24시간 대응",
-    desc: "응급 상황 발생 시에도 빠른 간병인 배정이 가능합니다.",
-  },
-  {
-    icon: Award,
-    title: "다양한 서비스",
-    desc: "병원 간병, 가정 간병, 단기 간병 등 다양한 니즈에 대응합니다.",
+    num: "03",
+    category: "안전과 신뢰",
+    items: ["정기 모니터링", "보호자와의 실시간 소통", "맞춤형 간병 계획 수립"],
   },
 ];
 
-const serviceTypes = [
-  { title: "병원 간병", desc: "입원 환자 옆에서 24시간 돌봄 서비스 제공" },
-  { title: "가정 간병", desc: "퇴원 후 가정에서의 전문 간병 서비스" },
-  { title: "단기 간병", desc: "보호자 부재 시 단기간 긴급 간병 서비스" },
-  { title: "치매 전문 간병", desc: "치매 어르신을 위한 전문적인 돌봄 서비스" },
+const applySteps = [
+  {
+    title: "상담 신청",
+    desc:
+      "전화 또는 온라인으로 상담을 신청해 주시면, 환자의 연령·진단명·간병 장소·희망 기간 등을 여쭙고 상황에 맞는 서비스를 안내해 드립니다.",
+  },
+  {
+    title: "맞춤 매칭",
+    desc:
+      "상담 내용을 바탕으로 환자와 잘 맞는 전문 간병인을 찾아 매칭합니다. 병원 간병, 가정 간병, 치매 전문 간병 등 필요한 형태에 맞춰 배정해 드립니다.",
+  },
+  {
+    title: "계약 및 배정",
+    desc:
+      "간병 기간과 비용을 안내드리고 계약을 진행합니다. 검증된 자격과 신원조회를 거친 간병인이 배정되어 안심하고 맡기실 수 있습니다.",
+  },
+  {
+    title: "서비스 시작",
+    desc:
+      "약속된 날짜에 간병이 시작되며, 이후에도 정기적인 모니터링과 보호자와의 소통을 통해 서비스 만족도를 꾸준히 확인합니다.",
+  },
 ];
 
 export default function CaregiverAssociation() {
   return (
     <div className="min-h-screen">
-      <div
-        className="relative h-64 flex items-center justify-center bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url(https://images.unsplash.com/photo-1576091160399-112ba8d25d1f?w=1920&auto=format&fit=crop&q=80)",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 text-center text-white">
-          <p className="text-brand-green font-semibold text-sm uppercase tracking-widest mb-2">서비스 안내</p>
-          <h1 className="text-4xl font-bold">간병인협회</h1>
-        </div>
+      {/* 히어로 - 클린 화이트 */}
+      <div className="text-center px-6 py-20 sm:py-28">
+        <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-black text-gray-900 leading-[1.05] tracking-normal mb-7 max-w-2xl mx-auto">
+          간병인협회란?
+        </h1>
+        <p className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto mb-10">
+          더비타민 재가복지센터와 연계된 간병인협회는 전문적으로 교육받은 간병인을
+          환자와 가족에게 연결해드리는 서비스입니다. 병원 입원 중이거나 퇴원 후
+          가정에서 전문적인 간병이 필요할 때, 상담을 통해 맞춤형 간병을 안내해 드립니다.
+        </p>
+        <a
+          href="tel:061-242-3536"
+          className="inline-flex items-center bg-brand-green text-white font-bold text-sm uppercase tracking-widest px-8 py-2.5 rounded-full hover:opacity-90 transition-opacity"
+        >
+          문의하기
+        </a>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
-        {/* 소개 */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-1 h-7 bg-brand-green rounded-full inline-block" />
-            간병인협회란?
+      {/* 이미지 섹션 */}
+      <div className="pb-20 flex justify-center px-4 sm:px-6 lg:px-8">
+        <img
+          src="/caregiver-home.png"
+          alt="간병인협회 서비스"
+          className="max-w-5xl w-full max-h-[480px] object-contain"
+        />
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
+        {/* 서비스 대상 + 제공 서비스 내용 */}
+        <Reveal className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:justify-center md:gap-8">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
+              서비스 대상
+            </h2>
+            <TargetsGrid targets={targets} />
+          </div>
+
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
+              서비스 특징
+            </h2>
+            <ServiceExpandCards categories={serviceCategories} />
+          </div>
+        </Reveal>
+
+        {/* 이용 방법 */}
+        <Reveal className="md:min-h-[calc(100vh-4rem)] md:flex md:flex-col md:justify-center">
+          <ApplyStepsAccordion title="이용 방법" steps={applySteps} />
+        </Reveal>
+
+        {/* CTA */}
+        <Reveal className="py-20 sm:py-28 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
+            궁금하신 점이 있으신가요?
           </h2>
-          <p className="text-gray-700 leading-relaxed text-lg">
-            더비타민 재가복지센터와 연계된 간병인협회는 전문적으로 교육받은 간병인을 환자와 가족에게
-            연결해드리는 서비스입니다. 병원 입원 중이거나 퇴원 후 가정에서 전문적인 간병이 필요할 때,
-            상담을 통해 맞춤형 간병 서비스를 안내해드립니다.
+          <p className="mb-10 text-gray-500 text-base sm:text-lg">
+            간병인 매칭 상담은 전화 또는 온라인으로 편하게 문의해 주세요.
           </p>
-        </section>
-
-        {/* 서비스 특징 */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">서비스 특징</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {features.map((f) => {
-              const Icon = f.icon;
-              return (
-                <div key={f.title} className="flex items-start gap-4 bg-white border border-gray-100 rounded-2xl p-5 shadow-sm">
-                  <div className="w-10 h-10 rounded-xl bg-brand-green-light flex items-center justify-center shrink-0">
-                    <Icon size={20} className="text-brand-green-dark" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-gray-900 mb-1">{f.title}</h3>
-                    <p className="text-sm text-gray-600">{f.desc}</p>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button
+              asChild
+              size="lg"
+              className="bg-brand-green text-white rounded-full px-8 hover:bg-brand-green-dark"
+            >
+              <a href="tel:061-242-3536" className="flex items-center gap-2">
+                <Phone size={16} /> 061-242-3536
+              </a>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="rounded-full px-8 border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
+              <Link href="/contact">온라인 문의하기</Link>
+            </Button>
           </div>
-        </section>
-
-        {/* 서비스 종류 */}
-        <section className="bg-gray-50 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">제공 서비스 종류</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {serviceTypes.map((s) => (
-              <div key={s.title} className="bg-white rounded-xl p-5 border border-gray-100">
-                <h3 className="font-bold text-brand-green-dark mb-1">{s.title}</h3>
-                <p className="text-sm text-gray-600">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* 상담 안내 */}
-        <section className="bg-brand-green-light border border-brand-green rounded-2xl p-8">
-          <div className="flex items-start gap-4">
-            <MessageCircle size={32} className="text-brand-green shrink-0 mt-1" />
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2">문의주시면 상담을 통해 안내드립니다</h2>
-              <p className="text-gray-700 mb-4 text-sm leading-relaxed">
-                간병인 서비스는 개인마다 필요한 서비스 형태와 기간이 다릅니다.
-                아래 정보를 미리 준비해주시면 더 빠르고 정확한 안내가 가능합니다.
-              </p>
-              <div className="bg-white rounded-xl p-4 text-sm text-gray-700 mb-6">
-                <p className="font-semibold text-gray-900 mb-2">💡 빠른 상담을 위해 준비하세요</p>
-                <ul className="space-y-1 list-disc list-inside text-gray-600">
-                  <li>환자 연령 및 성별</li>
-                  <li>현재 진단명 / 주요 증상</li>
-                  <li>간병 장소 (병원명 또는 자택 주소)</li>
-                  <li>희망 간병 시작일 및 기간</li>
-                  <li>24시간 또는 시간제 여부</li>
-                </ul>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <Button asChild size="lg">
-                  <a href="tel:061-242-3536" className="flex items-center gap-2">
-                    <Phone size={16} /> 061-242-3536
-                  </a>
-                </Button>
-                <Button asChild variant="outline" size="lg">
-                  <Link href="/contact">온라인 문의하기</Link>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
+        </Reveal>
       </div>
     </div>
   );

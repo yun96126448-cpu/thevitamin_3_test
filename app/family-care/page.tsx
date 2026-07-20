@@ -1,138 +1,140 @@
 import Link from "next/link";
-import { CheckCircle, Users, ClipboardList, ArrowRight, Phone, Star } from "lucide-react";
+import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Reveal from "@/components/shared/Reveal";
+import TargetsGrid from "@/components/shared/TargetsGrid";
+import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
+import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",
   "요양보호사 자격을 취득한 가족이 있는 경우",
   "도서·벽지 지역 등 서비스 접근이 어려운 경우",
-  "치매 어르신 가족 (치매가족 요양보호사 인정)",
+  "치매 어르신을 돌보는 가족 (치매가족 요양보호사 인정)",
 ];
 
-const benefits = [
-  { title: "정서적 안정", desc: "낯선 요양보호사보다 가족이 돌봄으로써 어르신의 심리적 안정에 도움" },
-  { title: "급여 수령", desc: "장기요양보험에서 가족 요양보호사에게 급여 지급" },
-  { title: "유연한 돌봄", desc: "가족의 스케줄에 맞게 유연하게 돌봄 시간 조정 가능" },
-  { title: "인력 부족 해소", desc: "거동이 불편한 어르신의 요양보호 인력 부족 문제 해결" },
+const serviceCategories = [
+  {
+    num: "01",
+    category: "자격과 급여",
+    items: ["요양보호사 자격 취득 후 서비스 제공", "장기요양보험에서 급여 지급", "하루 60분·월 20일 이상 제공 시 인정"],
+  },
+  {
+    num: "02",
+    category: "정서적 안정",
+    items: ["가족의 사랑과 정서적 유대감", "낯선 요양보호사 대비 높은 심리적 안정", "치매가족 요양보호사 특례 인정"],
+  },
+  {
+    num: "03",
+    category: "유연한 돌봄",
+    items: ["가족 일정에 맞춘 유연한 시간 조정", "도서·벽지 등 접근이 어려운 지역 지원", "요양 인력 부족 문제 해소"],
+  },
 ];
 
-const steps = [
-  { step: "01", title: "자격증 취득", desc: "요양보호사 교육원에서 이론·실습·실기 교육 이수 후 시험 합격" },
-  { step: "02", title: "장기요양 신청", desc: "국민건강보험공단에 장기요양인정 신청 및 등급 판정" },
-  { step: "03", title: "센터 계약", desc: "더비타민 재가복지센터와 가족 요양보호사 계약 체결" },
-  { step: "04", title: "서비스 및 급여", desc: "서비스 제공 후 장기요양 급여 수령" },
+const applySteps = [
+  {
+    title: "자격증 취득",
+    desc:
+      "요양보호사 교육원에서 이론·실기·실습 교육을 이수한 뒤 자격시험에 합격하면 가족 요양보호사로 활동하실 수 있습니다. 교육 기관 안내와 준비 과정도 저희가 함께 도와드립니다.",
+  },
+  {
+    title: "장기요양 신청",
+    desc:
+      "국민건강보험공단에 장기요양인정을 신청하고 등급 판정을 받습니다. 어르신의 상태에 맞는 등급이 확정되어야 가족요양 급여를 받으실 수 있어, 신청 서류 준비부터 꼼꼼히 안내해 드립니다.",
+  },
+  {
+    title: "센터 계약",
+    desc:
+      "더비타민 재가복지센터와 가족 요양보호사 계약을 체결합니다. 이용 시간과 급여 계획을 상담을 통해 함께 정하고, 필요한 서류와 절차를 담당자가 하나씩 안내해 드립니다.",
+  },
+  {
+    title: "서비스 및 급여",
+    desc:
+      "계약된 시간에 맞춰 어르신을 직접 돌보시고, 제공된 서비스에 대한 장기요양 급여를 받으실 수 있습니다. 서비스 기록 관리와 급여 신청까지 센터가 함께 챙겨드립니다.",
+  },
 ];
 
 export default function FamilyCare() {
   return (
     <div className="min-h-screen">
-      {/* 페이지 헤더 */}
-      <div
-        className="relative h-64 flex items-center justify-center bg-cover bg-center"
-        style={{
-          backgroundImage:
-            "url(https://images.unsplash.com/photo-1609220136736-443140cffec6?w=1920&auto=format&fit=crop&q=80)",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/50" />
-        <div className="relative z-10 text-center text-white">
-          <p className="text-brand-green font-semibold text-sm uppercase tracking-widest mb-2">서비스 안내</p>
-          <h1 className="text-4xl font-bold">가족요양</h1>
-        </div>
+      {/* 히어로 - 클린 화이트 */}
+      <div className="text-center px-6 py-20 sm:py-28">
+        <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-black text-gray-900 leading-[1.05] tracking-normal mb-7 max-w-2xl mx-auto">
+          가족요양이란?
+        </h1>
+        <p className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto mb-10">
+          가족요양은 수급자의 가족이 요양보호사 자격을 취득하여 직접 어르신을 돌보고
+          장기요양 급여를 받을 수 있는 제도입니다. 전문성을 갖춘 돌봄과 가족의 정서적 유대감을
+          함께 전할 수 있어, 어르신의 심리적 안정에도 큰 도움이 됩니다.
+        </p>
+        <a
+          href="tel:061-242-3536"
+          className="inline-flex items-center bg-brand-green text-white font-bold text-sm uppercase tracking-widest px-8 py-2.5 rounded-full hover:opacity-90 transition-opacity"
+        >
+          문의하기
+        </a>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
-        {/* 서비스 소개 */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-            <span className="w-1 h-7 bg-brand-green rounded-full inline-block" />
-            가족요양이란?
-          </h2>
-          <p className="text-gray-700 leading-relaxed text-lg">
-            가족요양은 수급자의 가족이 요양보호사 자격을 취득하여 직접 가족 어르신을 돌보고 급여를 받을 수 있는
-            제도입니다. 전문 요양보호사로서의 자격을 갖추어 보다 전문적이고 체계적인 돌봄을 제공하면서,
-            가족의 사랑과 정서적 유대감으로 어르신의 심리적 안정을 도모합니다.
-          </p>
-          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
-            ※ 가족 요양보호사는 하루 60분 이상, 월 20일 이상 서비스 제공 시 급여 수령 가능합니다. (단, 배우자 등 일부 가족은 제한)
-          </div>
-        </section>
+      {/* 이미지 섹션 */}
+      <div className="pb-20 flex justify-center px-4 sm:px-6 lg:px-8">
+        <img
+          src="/family-care-home.png"
+          alt="가족요양 서비스"
+          className="max-w-5xl w-full max-h-[480px] object-contain"
+        />
+      </div>
 
-        {/* 서비스 대상 */}
-        <section className="bg-gray-50 rounded-2xl p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Users size={24} className="text-brand-green" />
-            서비스 대상
-          </h2>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {targets.map((t, i) => (
-              <li key={i} className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
-                <CheckCircle size={18} className="text-brand-green mt-0.5 shrink-0" />
-                <span className="text-gray-700 text-sm">{t}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* 가족요양 혜택 */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <Star size={24} className="text-brand-green" />
-            가족요양의 장점
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {benefits.map((b) => (
-              <div key={b.title} className="bg-brand-green-light rounded-2xl p-6">
-                <h3 className="font-bold text-gray-900 mb-2">{b.title}</h3>
-                <p className="text-sm text-gray-700">{b.desc}</p>
-              </div>
-            ))}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
+        {/* 서비스 대상 + 제공 서비스 내용 */}
+        <Reveal className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:justify-center md:gap-8">
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
+              서비스 대상
+            </h2>
+            <TargetsGrid targets={targets} />
           </div>
-        </section>
+
+          <div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
+              가족요양의 장점
+            </h2>
+            <ServiceExpandCards categories={serviceCategories} />
+          </div>
+        </Reveal>
 
         {/* 신청 방법 */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-            <ClipboardList size={24} className="text-brand-green" />
-            신청 방법
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            {steps.map((s, i) => (
-              <div key={s.step} className="relative">
-                <div className="bg-brand-green-light rounded-2xl p-5 text-center h-full">
-                  <div className="w-10 h-10 rounded-full bg-brand-green text-white font-bold text-sm flex items-center justify-center mx-auto mb-3">
-                    {s.step}
-                  </div>
-                  <h3 className="font-bold text-gray-900 text-sm mb-1">{s.title}</h3>
-                  <p className="text-xs text-gray-600">{s.desc}</p>
-                </div>
-                {i < steps.length - 1 && (
-                  <div className="hidden sm:flex absolute top-1/2 -right-2 z-10 -translate-y-1/2">
-                    <ArrowRight size={16} className="text-brand-green" />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
+        <Reveal className="md:min-h-[calc(100vh-4rem)] md:flex md:flex-col md:justify-center">
+          <ApplyStepsAccordion steps={applySteps} />
+        </Reveal>
 
         {/* CTA */}
-        <section className="bg-brand-green rounded-2xl p-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-2">가족요양, 지금 시작하세요</h2>
-          <p className="mb-6 text-white/90">
-            자격 취득부터 서비스 계약까지, 더비타민이 도와드립니다.
+        <Reveal className="py-20 sm:py-28 text-center">
+          <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
+            궁금하신 점이 있으신가요?
+          </h2>
+          <p className="mb-10 text-gray-500 text-base sm:text-lg">
+            가족요양 자격 취득부터 서비스 계약까지, 전화 또는 온라인으로 문의해 주세요.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button asChild variant="secondary" size="lg">
+            <Button
+              asChild
+              size="lg"
+              className="bg-brand-green text-white rounded-full px-8 hover:bg-brand-green-dark"
+            >
               <a href="tel:061-242-3536" className="flex items-center gap-2">
                 <Phone size={16} /> 061-242-3536
               </a>
             </Button>
-            <Button asChild size="lg" className="bg-white text-brand-green-dark hover:bg-gray-100">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              className="rounded-full px-8 border-gray-300 text-gray-700 hover:bg-gray-100"
+            >
               <Link href="/contact">온라인 문의하기</Link>
             </Button>
           </div>
-        </section>
+        </Reveal>
       </div>
     </div>
   );

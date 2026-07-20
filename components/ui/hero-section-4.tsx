@@ -59,7 +59,7 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
       <section
         ref={ref}
         className={cn(
-          "relative flex h-screen min-h-[700px] w-full items-center justify-center overflow-hidden",
+          "relative flex h-dvh min-h-[560px] sm:min-h-[700px] w-full items-center justify-center overflow-hidden",
           className
         )}
         {...props}

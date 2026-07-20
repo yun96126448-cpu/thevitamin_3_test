@@ -3,32 +3,20 @@
 import { useState } from "react";
 import { Check, Plus } from "lucide-react";
 
-const serviceItems = [
-  {
-    num: "01",
-    category: "신체활동 지원",
-    items: ["세면·구강청결 도움", "식사 도움", "목욕 지원", "배설 도움", "체위 변경"],
-  },
-  {
-    num: "02",
-    category: "일상생활 지원",
-    items: ["취사·청소·세탁", "외출 동행", "병원 동행", "약 챙기기"],
-  },
-  {
-    num: "03",
-    category: "정서 지원",
-    items: ["말벗·정서적 지원", "인지 활동 프로그램", "여가 활동 지원"],
-  },
-];
+export type ServiceCategory = {
+  num: string;
+  category: string;
+  items: string[];
+};
 
-export default function ServiceExpandCards() {
+export default function ServiceExpandCards({ categories }: { categories: ServiceCategory[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   return (
     <>
       {/* 모바일: 슬라이드 스크롤 */}
       <div className="md:hidden overflow-x-auto snap-x snap-mandatory flex gap-3 pb-2 scrollbar-none">
-        {serviceItems.map((item) => (
+        {categories.map((item) => (
           <div
             key={item.num}
             className="snap-start shrink-0 w-[86%] rounded-2xl bg-brand-green-light p-7 flex flex-col"
@@ -51,7 +39,7 @@ export default function ServiceExpandCards() {
 
       {/* PC: 기존 hover 확장 */}
       <div className="hidden md:flex gap-3 h-[220px]">
-        {serviceItems.map((item, i) => {
+        {categories.map((item, i) => {
           const isActive = activeIndex === i;
           return (
             <div

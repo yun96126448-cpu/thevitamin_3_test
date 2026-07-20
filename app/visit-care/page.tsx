@@ -1,11 +1,10 @@
-"use client";
-
-import { useEffect } from "react";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import ServiceExpandCards from "@/components/visit-care/ServiceExpandCards";
-import ApplyStepsAccordion from "@/components/visit-care/ApplyStepsAccordion";
+import Reveal from "@/components/shared/Reveal";
+import TargetsGrid from "@/components/shared/TargetsGrid";
+import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
+import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",
@@ -14,29 +13,48 @@ const targets = [
   "치매, 중풍, 파킨슨 등 거동이 불편한 어르신",
 ];
 
+const serviceCategories = [
+  {
+    num: "01",
+    category: "신체활동 지원",
+    items: ["세면·구강청결 도움", "식사 도움", "목욕 지원", "배설 도움", "체위 변경"],
+  },
+  {
+    num: "02",
+    category: "일상생활 지원",
+    items: ["취사·청소·세탁", "외출 동행", "병원 동행", "약 챙기기"],
+  },
+  {
+    num: "03",
+    category: "정서 지원",
+    items: ["말벗·정서적 지원", "인지 활동 프로그램", "여가 활동 지원"],
+  },
+];
+
+const applySteps = [
+  {
+    title: "장기요양 신청",
+    desc:
+      "국민건강보험공단 지사 방문이나 우편·인터넷으로 장기요양인정 신청서를 제출합니다. 만 65세 이상은 물론 노인성 질병이 있는 65세 미만 분도 대상이며, 서류 준비는 저희가 함께 도와드립니다.",
+  },
+  {
+    title: "등급 판정",
+    desc:
+      "공단 사회복지사가 가정을 방문해 신체·인지 상태를 조사한 뒤, 약 30일 이내에 1~5등급 또는 인지지원등급으로 결과를 통보합니다. 등급에 따라 이용 가능한 급여 한도가 달라지니 결과지를 받으시면 바로 알려주세요.",
+  },
+  {
+    title: "센터 계약",
+    desc:
+      "등급 판정서를 가지고 방문하시면 담당 사회복지사가 상담 후 맞춤 급여계획을 세워드립니다. 이용 요일·시간과 본인부담금(등급별 약 15%, 기초수급자는 감면)을 정해 계약서를 작성합니다.",
+  },
+  {
+    title: "서비스 시작",
+    desc:
+      "어르신께 맞는 전문 요양보호사를 배정하고, 첫 방문은 담당자가 동행해 안내해 드립니다. 이후에도 정기 모니터링으로 만족도를 확인하며, 필요하면 언제든 조정해 드립니다.",
+  },
+];
+
 export default function VisitCare() {
-  // 데스크톱에서만 특정 섹션 근처에서 부드럽게 화면에 걸리도록 스크롤 스냅 적용
-  useEffect(() => {
-    const html = document.documentElement;
-    const mql = window.matchMedia("(min-width: 768px)");
-
-    const apply = () => {
-      if (mql.matches) {
-        html.classList.add("snap-y", "snap-proximity");
-      } else {
-        html.classList.remove("snap-y", "snap-proximity");
-      }
-    };
-
-    apply();
-    mql.addEventListener("change", apply);
-
-    return () => {
-      mql.removeEventListener("change", apply);
-      html.classList.remove("snap-y", "snap-proximity");
-    };
-  }, []);
-
   return (
     <div className="min-h-screen">
       {/* 히어로 - 클린 화이트 */}
@@ -67,42 +85,30 @@ export default function VisitCare() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-        {/* 서비스 대상 + 제공 서비스 내용 : 화면 한 페이지 꽉 채우는 스냅 섹션 */}
-        <section className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:scroll-mt-16 md:snap-start md:justify-center md:gap-8">
+        {/* 서비스 대상 + 제공 서비스 내용 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
+        <Reveal className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:justify-center md:gap-8">
           <div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
               서비스 대상
             </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {targets.map((t, i) => (
-                <li
-                  key={i}
-                  className="flex flex-col gap-8 md:gap-4 bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow duration-300"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-900 shrink-0">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span className="text-gray-700 text-sm sm:text-base leading-relaxed tracking-[0]">{t}</span>
-                </li>
-              ))}
-            </ul>
+            <TargetsGrid targets={targets} />
           </div>
 
           <div>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
               제공 서비스 내용
             </h2>
-            <ServiceExpandCards />
+            <ServiceExpandCards categories={serviceCategories} />
           </div>
-        </section>
+        </Reveal>
 
-        {/* 신청 방법 : 화면 한 페이지 꽉 채우는 스냅 섹션 */}
-        <section className="md:min-h-[calc(100vh-4rem)] md:scroll-mt-16 md:snap-start md:flex md:flex-col md:justify-center">
-          <ApplyStepsAccordion />
-        </section>
+        {/* 신청 방법 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
+        <Reveal className="md:min-h-[calc(100vh-4rem)] md:flex md:flex-col md:justify-center">
+          <ApplyStepsAccordion steps={applySteps} />
+        </Reveal>
 
         {/* CTA */}
-        <section className="md:snap-start md:scroll-mt-16 py-20 sm:py-28 text-center">
+        <Reveal className="py-20 sm:py-28 text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
             궁금하신 점이 있으신가요?
           </h2>
@@ -128,7 +134,7 @@ export default function VisitCare() {
               <Link href="/contact">온라인 문의하기</Link>
             </Button>
           </div>
-        </section>
+        </Reveal>
       </div>
     </div>
   );
