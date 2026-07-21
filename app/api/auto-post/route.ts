@@ -1,13 +1,11 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
-import OpenAI from "openai";
 import { supabaseAdmin } from "@/lib/supabase";
 import { auth } from "@/auth";
 
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const BG_COLORS = ["#f0eedc", "#dce8f5", "#e8dcf5", "#dcf5e8", "#f5e8dc", "#f5dcdc"];
 
@@ -71,24 +69,6 @@ async function searchRecentNews(query: string): Promise<TavilyResult[]> {
   if (!res.ok) throw new Error(`Tavily 검색 실패: ${res.status}`);
   const data = await res.json() as { results?: TavilyResult[] };
   return data.results ?? [];
-}
-
-async function uploadImageToSupabase(imageUrl: string, filename: string): Promise<string> {
-  const res = await fetch(imageUrl);
-  const arrayBuffer = await res.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
-
-  const { data, error } = await supabaseAdmin.storage
-    .from("post-images")
-    .upload(filename, buffer, { contentType: "image/png", upsert: true });
-
-  if (error) throw new Error(`이미지 업로드 실패: ${error.message}`);
-
-  const { data: urlData } = supabaseAdmin.storage
-    .from("post-images")
-    .getPublicUrl(data.path);
-
-  return urlData.publicUrl;
 }
 
 export async function GET(req: Request) {
@@ -158,23 +138,16 @@ ${newsContext}
 {
   "title": "${typeConfig.titleGuide}",
   "category": "${typeConfig.defaultCategory}",
-  "content": "HTML 본문",
-  "imagePrompts": ["영어 프롬프트1", "영어 프롬프트2", "영어 프롬프트3", "영어 프롬프트4", "영어 프롬프트5"]
+  "content": "HTML 본문"
 }
 
 HTML 본문 규칙:
 - 총 글자수: HTML 태그 제외 1400~1600자
 - 위 참고자료 내용을 충실히 반영하되, 독자에게 실질적으로 도움이 되는 해설 추가
-- 구조: <h2>도입 제목</h2> → <p>도입 2~3줄</p> → <img src="[IMAGE_1]"> → <h3>소주제1</h3> → 내용 + <img src="[IMAGE_2]"> → <h3>소주제2</h3> → 내용 + <img src="[IMAGE_3]"> → <h3>소주제3</h3> → 내용 + <img src="[IMAGE_4]"> → <blockquote>핵심 요약 1~2문장</blockquote> → <p>마무리</p> → <img src="[IMAGE_5]">
+- 구조: <h2>도입 제목</h2> → <p>도입 2~3줄</p> → <h3>소주제1</h3> → 내용 → <h3>소주제2</h3> → 내용 → <h3>소주제3</h3> → 내용 → <blockquote>핵심 요약 1~2문장</blockquote> → <p>마무리</p>
 - <ul>, <ol>, <strong>, <em> 적극 활용하여 가독성 높게
-- [IMAGE_1]~[IMAGE_5] 자리표시자를 정확히 삽입
-- 출처 표기: 참고한 자료의 기관명과 링크를 본문 마지막 <p>에 "출처: [기관명] ([URL])" 형식으로 명시
-
-imagePrompts 규칙:
-- 영어로 작성
-- photorealistic, warm natural lighting, South Korean elderly care setting
-- 프롬프트1(대표이미지): 주제를 대표하는 감성적인 장면
-- 프롬프트2~5: 본문 소주제별 구체적인 장면`,
+- 이미지 태그(<img>)는 사용하지 않음
+- 출처 표기: 참고한 자료의 기관명과 링크를 본문 마지막 <p>에 "출처: [기관명] ([URL])" 형식으로 명시`,
         },
       ],
     });
@@ -188,47 +161,15 @@ imagePrompts 규칙:
       title: string;
       category: string;
       content: string;
-      imagePrompts: string[];
     };
 
-    // ── 3. DALL-E 3로 이미지 5개 생성 → Supabase Storage 업로드 ──────────
-    const timestamp = Date.now();
-    let processedContent = parsed.content;
-
-    for (let i = 1; i <= 5; i++) {
-      try {
-        const imgRes = await openai.images.generate({
-          model: "dall-e-3",
-          prompt: parsed.imagePrompts[i - 1],
-          n: 1,
-          size: "1024x1024",
-          quality: "standard",
-        });
-
-        const tempUrl = imgRes.data![0].url!;
-        const permanentUrl = await uploadImageToSupabase(
-          tempUrl,
-          `${timestamp}_${i}.png`
-        );
-        processedContent = processedContent.replace(`[IMAGE_${i}]`, permanentUrl);
-      } catch {
-        processedContent = processedContent.replace(
-          new RegExp(`<img[^>]*src="\\[IMAGE_${i}\\]"[^>]*>`, "g"),
-          ""
-        );
-      }
-    }
-
-    // ── 4. 썸네일 추출 & Supabase 저장 ──────────────────────────────────
-    const thumbnailMatch = processedContent.match(/<img[^>]+src="([^"]+)"/);
-    const thumbnail = thumbnailMatch?.[1];
+    // ── 3. 저장 (이미지 없이 텍스트만) ────────────────────────────────
     const bg = BG_COLORS[Math.floor(Math.random() * BG_COLORS.length)];
 
     const { error: insertError } = await supabaseAdmin.from("notices").insert({
       category: parsed.category ?? typeConfig.defaultCategory,
       title: parsed.title,
-      content: processedContent,
-      thumbnail,
+      content: parsed.content,
       bg,
       date: todayStr(),
       status: "draft", // 관리자 승인 전까지 비공개 — 공지사항 페이지의 "검토 대기" 목록에서 승인/거절
