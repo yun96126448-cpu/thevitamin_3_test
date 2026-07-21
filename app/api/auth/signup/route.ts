@@ -28,3 +28,12 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ user: { id: data.user.id, email: data.user.email } });
 }
+
+// TEMP: 검증용 테스트 계정 삭제. 배포 확인 끝나면 제거할 것.
+export async function DELETE(req: Request) {
+  const { id } = await req.json();
+  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const { error } = await supabaseAdmin.auth.admin.deleteUser(id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ deleted: id });
+}
