@@ -3,8 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Menu, X, ChevronDown, LogOut } from "lucide-react";
+import { useSession, signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +20,20 @@ const navLinks = [
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { data: session, status } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-sm">
@@ -55,11 +69,42 @@ export default function Navbar() {
           ))}
         </ul>
 
-        {/* Login button */}
-        <div className="hidden lg:flex items-center">
-          <Button asChild variant="outline" size="sm">
-            <Link href="/login">로그인</Link>
-          </Button>
+        {/* Auth area */}
+        <div className="hidden lg:flex items-center gap-2">
+          {status === "authenticated" ? (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                {session.user?.name ?? session.user?.email} 님
+                <ChevronDown size={16} />
+              </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg border border-gray-100 py-1">
+                  <button
+                    onClick={() => {
+                      setUserMenuOpen(false);
+                      signOut({ callbackUrl: "/" });
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    <LogOut size={14} />
+                    로그아웃
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link href="/login">로그인</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/signup">회원가입</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile hamburger */}
@@ -93,13 +138,40 @@ export default function Navbar() {
               </li>
             ))}
             <li className="pt-2 border-t border-gray-100">
-              <Link
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 rounded-md text-sm font-medium text-brand-green border border-brand-green text-center"
-              >
-                로그인
-              </Link>
+              {status === "authenticated" ? (
+                <div className="space-y-1">
+                  <p className="px-3 py-1 text-sm text-gray-500">
+                    {session.user?.name ?? session.user?.email} 님
+                  </p>
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      signOut({ callbackUrl: "/" });
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 border border-gray-300"
+                  >
+                    <LogOut size={14} />
+                    로그아웃
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 block px-3 py-2 rounded-md text-sm font-medium text-brand-green border border-brand-green text-center"
+                  >
+                    로그인
+                  </Link>
+                  <Link
+                    href="/signup"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex-1 block px-3 py-2 rounded-md text-sm font-medium text-white bg-brand-green text-center"
+                  >
+                    회원가입
+                  </Link>
+                </div>
+              )}
             </li>
           </ul>
         </div>

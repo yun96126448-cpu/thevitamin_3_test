@@ -14,21 +14,21 @@ export default function ServiceExpandCards({ categories }: { categories: Service
 
   return (
     <>
-      {/* 모바일: 슬라이드 스크롤 */}
-      <div className="md:hidden overflow-x-auto snap-x snap-mandatory flex gap-3 pb-2 scrollbar-none">
+      {/* 모바일: 세로 카드 목록 */}
+      <div className="md:hidden flex flex-col gap-3">
         {categories.map((item) => (
           <div
             key={item.num}
-            className="snap-start shrink-0 w-[86%] rounded-2xl bg-brand-green-light p-7 flex flex-col"
+            className="rounded-2xl bg-brand-green-light p-5 flex flex-col gap-1.5"
           >
-            <div className="flex-1">
-              <h3 className="font-bold text-gray-900 leading-tight mb-2 text-xl">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="font-bold text-gray-900 leading-tight text-lg">
                 {item.category}
               </h3>
-              <p className="text-xs text-gray-400 font-medium">/ {item.num}</p>
+              <p className="text-xs text-gray-400 font-medium shrink-0">/ {item.num}</p>
             </div>
             <p
-              className="text-gray-700 text-sm leading-relaxed mt-4"
+              className="text-gray-700 text-sm leading-relaxed"
               style={{ wordBreak: "keep-all", overflowWrap: "break-word" }}
             >
               {item.items.join(", ")}

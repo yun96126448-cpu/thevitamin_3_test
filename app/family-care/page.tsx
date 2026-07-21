@@ -85,25 +85,24 @@ export default function FamilyCare() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-        {/* 서비스 대상 + 제공 서비스 내용 */}
-        <Reveal className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:justify-center md:gap-8">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
-              서비스 대상
-            </h2>
-            <TargetsGrid targets={targets} />
-          </div>
+        {/* 서비스 대상 */}
+        <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
+            서비스 대상
+          </h2>
+          <TargetsGrid targets={targets} />
+        </Reveal>
 
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
-              가족요양의 장점
-            </h2>
-            <ServiceExpandCards categories={serviceCategories} />
-          </div>
+        {/* 가족요양의 장점 */}
+        <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
+            가족요양의 장점
+          </h2>
+          <ServiceExpandCards categories={serviceCategories} />
         </Reveal>
 
         {/* 신청 방법 */}
-        <Reveal className="md:min-h-[calc(100vh-4rem)] md:flex md:flex-col md:justify-center">
+        <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <ApplyStepsAccordion steps={applySteps} />
         </Reveal>
 

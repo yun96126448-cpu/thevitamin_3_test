@@ -137,7 +137,14 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-gray-500">
+          <p className="mt-4 text-center text-sm text-gray-500">
+            아직 계정이 없으신가요?{" "}
+            <Link href="/signup" className="text-brand-green hover:underline font-medium">
+              회원가입
+            </Link>
+          </p>
+
+          <p className="mt-2 text-center text-xs text-gray-500">
             문의사항이 있으신가요?{" "}
             <Link href="/contact" className="text-brand-green hover:underline font-medium">
               고객 문의

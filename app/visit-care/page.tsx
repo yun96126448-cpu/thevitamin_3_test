@@ -85,25 +85,24 @@ export default function VisitCare() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-        {/* 서비스 대상 + 제공 서비스 내용 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
-        <Reveal className="flex flex-col gap-10 md:min-h-[calc(100vh-4rem)] md:justify-center md:gap-8">
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
-              서비스 대상
-            </h2>
-            <TargetsGrid targets={targets} />
-          </div>
+        {/* 서비스 대상 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
+        <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
+            서비스 대상
+          </h2>
+          <TargetsGrid targets={targets} />
+        </Reveal>
 
-          <div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
-              제공 서비스 내용
-            </h2>
-            <ServiceExpandCards categories={serviceCategories} />
-          </div>
+        {/* 제공 서비스 내용 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
+        <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
+            제공 서비스 내용
+          </h2>
+          <ServiceExpandCards categories={serviceCategories} />
         </Reveal>
 
         {/* 신청 방법 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
-        <Reveal className="md:min-h-[calc(100vh-4rem)] md:flex md:flex-col md:justify-center">
+        <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <ApplyStepsAccordion steps={applySteps} />
         </Reveal>
 

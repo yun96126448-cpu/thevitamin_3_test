@@ -496,11 +496,9 @@ export default function NoticesPage() {
                     : { background: notice.bg }),
                 }}>
                   {notice.thumbnail && (
-                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <img src={notice.thumbnail} alt="" style={{ width: "110px", height: "110px", objectFit: "cover", borderRadius: "14px", border: "3px solid rgba(255,255,255,0.9)", boxShadow: "0 4px 16px rgba(0,0,0,0.18)" }} />
-                    </div>
+                    <img src={notice.thumbnail} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                   )}
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, #ffffff 100%)", pointerEvents: "none" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 55%, #ffffff 100%)", pointerEvents: "none" }} />
                 </div>
                 <div style={{ padding: "4px 20px 24px" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px" }}>
@@ -565,9 +563,7 @@ export default function NoticesPage() {
                   : { background: selectedNotice.bg }),
               }}>
                 {selectedNotice.thumbnail && (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <img src={selectedNotice.thumbnail} alt="" style={{ width: "130px", height: "130px", objectFit: "cover", borderRadius: "16px", border: "3px solid rgba(255,255,255,0.9)", boxShadow: "0 6px 20px rgba(0,0,0,0.2)" }} />
-                  </div>
+                  <img src={selectedNotice.thumbnail} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
                 )}
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.18) 100%)", pointerEvents: "none" }} />
                 <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
