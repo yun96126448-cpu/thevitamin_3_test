@@ -1,48 +1,6 @@
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
 import Credentials from "next-auth/providers/credentials";
-import type { OAuthConfig } from "next-auth/providers";
 import { createClient } from "@supabase/supabase-js";
-
-interface KakaoProfile {
-  id: number;
-  kakao_account?: {
-    email?: string;
-    profile?: {
-      nickname?: string;
-      profile_image_url?: string;
-    };
-  };
-}
-
-const KakaoProvider: OAuthConfig<KakaoProfile> = {
-  id: "kakao",
-  name: "카카오",
-  type: "oauth",
-  authorization: {
-    url: "https://kauth.kakao.com/oauth/authorize",
-    params: { scope: "profile_nickname profile_image" },
-  },
-  token: {
-    url: "https://kauth.kakao.com/oauth/token",
-    params: {
-      client_id: process.env.AUTH_KAKAO_ID,
-      client_secret: process.env.AUTH_KAKAO_SECRET,
-    },
-  },
-  userinfo: "https://kapi.kakao.com/v2/user/me",
-  checks: ["state"],
-  profile(profile) {
-    return {
-      id: String(profile.id),
-      name: profile.kakao_account?.profile?.nickname ?? null,
-      email: profile.kakao_account?.email ?? `kakao_${profile.id}@kakao.user`,
-      image: profile.kakao_account?.profile?.profile_image_url ?? null,
-    };
-  },
-  clientId: process.env.AUTH_KAKAO_ID,
-  clientSecret: process.env.AUTH_KAKAO_SECRET ?? "",
-};
 
 const CredentialsProvider = Credentials({
   credentials: {
@@ -73,7 +31,7 @@ const CredentialsProvider = Credentials({
 });
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  providers: [Google, KakaoProvider, CredentialsProvider],
+  providers: [CredentialsProvider],
   pages: {
     signIn: "/login",
   },

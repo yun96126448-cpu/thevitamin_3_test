@@ -689,7 +689,7 @@ export default function NoticesPage() {
                 <div style={{ marginBottom: "16px" }}>
                   <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#8b95a1", marginBottom: "8px" }}>카테고리</label>
                   <div style={{ display: "flex", gap: "10px" }}>
-                    {["공지", "서비스"].map((cat) => (
+                    {["공지", "서비스", "정보"].map((cat) => (
                       <button
                         key={cat}
                         onClick={() => setForm((f) => ({ ...f, category: cat }))}

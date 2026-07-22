@@ -81,7 +81,7 @@ ${srcLine([{ name: SRC.mohw, url: SRC.mohwUrl }, { name: SRC.ltc, url: SRC.ltcUr
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "장기요양등급, 이렇게 신청하세요 (A to Z)",
     date: "2026.07.15",
     content: `
@@ -102,7 +102,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }, { name: SRC.nhis, url: SRC.nhisUr
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "재가급여 6가지, 우리 어르신은 무엇을 받을 수 있을까?",
     date: "2026.07.11",
     content: `
@@ -125,7 +125,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }])}
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "방문요양 본인부담금, 얼마나 내나요?",
     date: "2026.07.08",
     content: `
@@ -146,7 +146,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }, { name: SRC.nhis, url: SRC.nhisUr
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "복지용구, 연 160만 원까지 지원받는 법",
     date: "2026.07.04",
     content: `
@@ -167,7 +167,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }])}
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "치매 어르신을 위한 '인지활동형 방문요양'",
     date: "2026.06.27",
     content: `
@@ -188,7 +188,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }, { name: SRC.mohw, url: SRC.mohwUr
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "가족이 요양보호사가 되면? '가족요양' 완전 정복",
     date: "2026.06.20",
     content: `
@@ -211,7 +211,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }, { name: SRC.mohw, url: SRC.mohwUr
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "등급 갱신·변경, 놓치면 서비스가 끊깁니다",
     date: "2026.06.13",
     content: `
@@ -232,7 +232,7 @@ ${srcLine([{ name: SRC.ltc, url: SRC.ltcUrl }, { name: SRC.nhis, url: SRC.nhisUr
 `.trim(),
   },
   {
-    category: "생활정보",
+    category: "정보",
     title: "폭염, 어르신 건강을 지키는 여름철 수칙",
     date: "2026.07.20",
     content: `
