@@ -5,6 +5,14 @@ import Reveal from "@/components/shared/Reveal";
 import TargetsGrid from "@/components/shared/TargetsGrid";
 import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
 import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "방문요양",
+  description:
+    "목포 더비타민 재가복지센터 방문요양 서비스. 요양보호사가 가정을 방문해 신체활동·가사활동을 지원합니다. 장기요양 1~5등급 어르신 대상, 상담 061-242-3536",
+  alternates: { canonical: "/visit-care" },
+};
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",

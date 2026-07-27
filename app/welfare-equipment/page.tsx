@@ -5,6 +5,14 @@ import Reveal from "@/components/shared/Reveal";
 import TargetsGrid from "@/components/shared/TargetsGrid";
 import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
 import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "복지용구",
+  description:
+    "목포 더비타민 재가복지센터 복지용구 대여·구입. 수동 휠체어, 전동 침대, 욕창 예방 매트리스, 보행 보조기 등 장기요양보험 급여 품목을 지원합니다. 상담 061-242-3536",
+  alternates: { canonical: "/welfare-equipment" },
+};
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",

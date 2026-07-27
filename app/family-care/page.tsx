@@ -5,6 +5,14 @@ import Reveal from "@/components/shared/Reveal";
 import TargetsGrid from "@/components/shared/TargetsGrid";
 import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
 import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "가족요양",
+  description:
+    "목포 더비타민 재가복지센터 가족요양 서비스. 요양보호사 자격을 취득한 가족이 직접 어르신을 돌보고 장기요양보험 급여를 받습니다. 상담 061-242-3536",
+  alternates: { canonical: "/family-care" },
+};
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",

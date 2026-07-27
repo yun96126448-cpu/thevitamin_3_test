@@ -5,6 +5,14 @@ import Reveal from "@/components/shared/Reveal";
 import TargetsGrid from "@/components/shared/TargetsGrid";
 import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
 import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "간병인협회",
+  description:
+    "목포 더비타민 재가복지센터 간병인 서비스. 교육 이수·신원조회를 마친 전문 간병 인력을 24시간 긴급 배정합니다. 병원 입원 간병, 퇴원 후 회복 돌봄. 상담 061-242-3536",
+  alternates: { canonical: "/caregiver" },
+};
 
 const targets = [
   "병원 입원 중 24시간 간병이 필요한 환자",
