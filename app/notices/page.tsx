@@ -82,7 +82,9 @@ export default function NoticesPage() {
   const copyForNaver = async (notice: Notice) => {
     // 네이버 에디터는 외부 CSS/클래스는 걸러내지만 인라인 style은 대부분 유지함.
     // 그래서 각 요소에 style을 직접 박아 서식·검정 글자색이 붙여넣기 후에도 남게 함.
-    const styled = (notice.content ?? "")
+    const BLANK = '<p style="color:#000000;">&nbsp;</p>'; // 실제 빈 줄 (네이버는 마진을 씹으므로 빈 문단으로 띄움)
+
+    let styled = (notice.content ?? "")
       .replace(/<img[^>]*>/gi, "") // 이미지 태그 제거
       .replace(/<h2(\s[^>]*)?>/gi, '<h2 style="font-size:24px;font-weight:800;color:#000000;line-height:1.4;margin:28px 0 14px;">')
       .replace(/<h3(\s[^>]*)?>/gi, '<h3 style="font-size:19px;font-weight:700;color:#000000;line-height:1.4;margin:24px 0 10px;">')
@@ -94,6 +96,15 @@ export default function NoticesPage() {
       .replace(/<em(\s[^>]*)?>/gi, '<em style="color:#000000;">')
       .replace(/<blockquote(\s[^>]*)?>/gi, '<blockquote style="border-left:4px solid #1F6B2A;background:#f2f8f3;padding:14px 20px;margin:22px 0;color:#000000;font-size:16px;line-height:1.8;">')
       .replace(/<a(\s[^>]*)?>/gi, '<a style="color:#1F6B2A;">');
+
+    // 빈 줄 삽입: 대제목(h2) 위 2줄·아래 1줄, 소제목(h3) 위 1줄
+    styled = styled
+      .replace(/<h2 /g, `${BLANK}${BLANK}<h2 `)
+      .replace(/(<\/h2>)/g, `$1${BLANK}`)
+      .replace(/<h3 /g, `${BLANK}<h3 `);
+
+    // 출처 문단 위 3줄
+    styled = styled.replace(/(<p style="[^"]*">\s*출처)/, `${BLANK}${BLANK}${BLANK}$1`);
 
     const titleHtml = `<p style="font-size:26px;font-weight:800;color:#000000;line-height:1.4;margin:0 0 20px;">${notice.title}</p>`;
     const html = `<div style="color:#000000;font-family:'맑은 고딕','Malgun Gothic',sans-serif;">${titleHtml}${styled}</div>`;
