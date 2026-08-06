@@ -9,6 +9,25 @@ const BG_COLORS = ["#f0eedc","#dce8f5","#e8dcf5","#dcf5e8","#f5e8dc","#f5dcdc"];
 const DRAFT_KEY = "thevitamin_notice_draft";
 const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "").split(",").map((e) => e.trim());
 
+// 네이버 복사 CTA용 사이트 주소 — 도메인 바뀌면 이 한 줄만 수정
+const SITE_URL = "https://thevitamin-3-test.vercel.app";
+
+// 글 주제에 맞는 서비스 페이지 + 따뜻한 권유 문구 선택
+function pickServiceCTA(notice: Notice): { url: string; blurb: string } {
+  const text = `${notice.title} ${notice.content ?? ""}`;
+  if (/복지용구/.test(text)) {
+    return { url: `${SITE_URL}/welfare-equipment`, blurb: "필요한 복지용구, 부담은 덜고 편안하게. 더비타민 재가복지센터가 상담부터 따뜻하게 함께하겠습니다." };
+  }
+  if (/가족요양/.test(text)) {
+    return { url: `${SITE_URL}/family-care`, blurb: "가족이 직접 돌보며 급여도 받는 가족요양, 더비타민 재가복지센터가 신청까지 따뜻하게 안내해드립니다." };
+  }
+  if (/간병/.test(text)) {
+    return { url: `${SITE_URL}/caregiver`, blurb: "믿고 맡길 수 있는 간병, 더비타민 재가복지센터가 따뜻하게 연결해드립니다." };
+  }
+  // 기본: 방문요양(주력 서비스)
+  return { url: `${SITE_URL}/visit-care`, blurb: "거동이 불편한 어르신, 집에서 편안하게 돌봄받으실 수 있도록 더비타민 재가복지센터가 따뜻하게 함께하겠습니다." };
+}
+
 type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
 type FormState = { category: string; title: string; content: string; bgImage: string; repImage: string };
 
@@ -106,11 +125,15 @@ export default function NoticesPage() {
     // 출처 문단 위 3줄
     styled = styled.replace(/(<p style="[^"]*">\s*출처)/, `${BLANK}${BLANK}${BLANK}$1`);
 
+    // 맨 아래 홈페이지 CTA (글 주제에 맞는 서비스 페이지로 연결)
+    const cta = pickServiceCTA(notice);
+    const ctaHtml = `${BLANK}${BLANK}<p style="font-size:16px;color:#000000;line-height:1.9;background:#f2f8f3;border:1px solid #cfe6d5;border-radius:12px;padding:18px 20px;margin:0;">${cta.blurb}<br><a href="${cta.url}" style="color:#1F6B2A;font-weight:700;">▶ 더비타민 재가복지센터 홈페이지에서 상담·신청하기</a></p>`;
+
     const titleHtml = `<p style="font-size:26px;font-weight:800;color:#000000;line-height:1.4;margin:0 0 20px;">${notice.title}</p>`;
-    const html = `<div style="color:#000000;font-family:'맑은 고딕','Malgun Gothic',sans-serif;">${titleHtml}${styled}</div>`;
+    const html = `<div style="color:#000000;font-family:'맑은 고딕','Malgun Gothic',sans-serif;">${titleHtml}${styled}${ctaHtml}</div>`;
 
     // 서식 없는 순수 텍스트 대체본 (에디터가 HTML 못 받을 때 대비)
-    const plain = `${notice.title}\n\n${(notice.content ?? "").replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim()}`;
+    const plain = `${notice.title}\n\n${(notice.content ?? "").replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim()}\n\n\n${cta.blurb}\n▶ 더비타민 재가복지센터 홈페이지에서 상담·신청하기: ${cta.url}`;
 
     try {
       if (navigator.clipboard && "write" in navigator.clipboard && typeof ClipboardItem !== "undefined") {
