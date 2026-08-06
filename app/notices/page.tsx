@@ -80,8 +80,24 @@ export default function NoticesPage() {
   }, [isAdmin]);
 
   const copyForNaver = async (notice: Notice) => {
-    // 제목 + 본문을 서식 유지한 채 클립보드에 복사 → 네이버 글쓰기 창에 Ctrl+V
-    const html = `<h2>${notice.title}</h2>${notice.content ?? ""}`;
+    // 네이버 에디터는 외부 CSS/클래스는 걸러내지만 인라인 style은 대부분 유지함.
+    // 그래서 각 요소에 style을 직접 박아 서식·검정 글자색이 붙여넣기 후에도 남게 함.
+    const styled = (notice.content ?? "")
+      .replace(/<img[^>]*>/gi, "") // 이미지 태그 제거
+      .replace(/<h2(\s[^>]*)?>/gi, '<h2 style="font-size:24px;font-weight:800;color:#000000;line-height:1.4;margin:28px 0 14px;">')
+      .replace(/<h3(\s[^>]*)?>/gi, '<h3 style="font-size:19px;font-weight:700;color:#000000;line-height:1.4;margin:24px 0 10px;">')
+      .replace(/<p(\s[^>]*)?>/gi, '<p style="font-size:16px;color:#000000;line-height:1.9;margin:0 0 16px;">')
+      .replace(/<ul(\s[^>]*)?>/gi, '<ul style="margin:8px 0 18px;padding-left:22px;color:#000000;">')
+      .replace(/<ol(\s[^>]*)?>/gi, '<ol style="margin:8px 0 18px;padding-left:22px;color:#000000;">')
+      .replace(/<li(\s[^>]*)?>/gi, '<li style="font-size:16px;color:#000000;line-height:1.8;margin-bottom:8px;">')
+      .replace(/<strong(\s[^>]*)?>/gi, '<strong style="font-weight:700;color:#000000;">')
+      .replace(/<em(\s[^>]*)?>/gi, '<em style="color:#000000;">')
+      .replace(/<blockquote(\s[^>]*)?>/gi, '<blockquote style="border-left:4px solid #1F6B2A;background:#f2f8f3;padding:14px 20px;margin:22px 0;color:#000000;font-size:16px;line-height:1.8;">')
+      .replace(/<a(\s[^>]*)?>/gi, '<a style="color:#1F6B2A;">');
+
+    const titleHtml = `<p style="font-size:26px;font-weight:800;color:#000000;line-height:1.4;margin:0 0 20px;">${notice.title}</p>`;
+    const html = `<div style="color:#000000;font-family:'맑은 고딕','Malgun Gothic',sans-serif;">${titleHtml}${styled}</div>`;
+
     // 서식 없는 순수 텍스트 대체본 (에디터가 HTML 못 받을 때 대비)
     const plain = `${notice.title}\n\n${(notice.content ?? "").replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim()}`;
 
