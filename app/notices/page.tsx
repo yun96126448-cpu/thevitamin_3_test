@@ -619,6 +619,14 @@ export default function NoticesPage() {
                     </>
                   ) : (
                     <>
+                      {isAdmin && (
+                        <button
+                          onClick={() => copyForNaver(selectedNotice)}
+                          style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "#03c75a", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                        >
+                          📋 네이버용 복사
+                        </button>
+                      )}
                       {session?.user?.email && session.user.email === selectedNotice.author_email && (
                         <button
                           onClick={() => openEditModal(selectedNotice)}
