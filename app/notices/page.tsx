@@ -79,6 +79,29 @@ export default function NoticesPage() {
     if (isAdmin) fetchPendingDrafts();
   }, [isAdmin]);
 
+  const copyForNaver = async (notice: Notice) => {
+    // 제목 + 본문을 서식 유지한 채 클립보드에 복사 → 네이버 글쓰기 창에 Ctrl+V
+    const html = `<h2>${notice.title}</h2>${notice.content ?? ""}`;
+    // 서식 없는 순수 텍스트 대체본 (에디터가 HTML 못 받을 때 대비)
+    const plain = `${notice.title}\n\n${(notice.content ?? "").replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim()}`;
+
+    try {
+      if (navigator.clipboard && "write" in navigator.clipboard && typeof ClipboardItem !== "undefined") {
+        await navigator.clipboard.write([
+          new ClipboardItem({
+            "text/html": new Blob([html], { type: "text/html" }),
+            "text/plain": new Blob([plain], { type: "text/plain" }),
+          }),
+        ]);
+      } else {
+        await navigator.clipboard.writeText(plain);
+      }
+      showToast("네이버용으로 복사됨! 블로그 글쓰기 창에 붙여넣기(Ctrl+V) 하세요.");
+    } catch {
+      showToast("복사 실패 — 브라우저 권한을 확인해주세요.");
+    }
+  };
+
   const handleReview = async (notice: Notice, action: "publish" | "reject") => {
     try {
       if (action === "publish") {
@@ -436,6 +459,12 @@ export default function NoticesPage() {
                   </span>
                   <div style={{ display: "flex", gap: "6px", flexShrink: 0 }}>
                     <button
+                      onClick={() => copyForNaver(d)}
+                      style={{ height: "32px", padding: "0 14px", borderRadius: "16px", border: "1px solid #03c75a", background: "#ffffff", color: "#03c75a", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                    >
+                      📋 네이버용 복사
+                    </button>
+                    <button
                       onClick={() => handleReview(d, "publish")}
                       style={{ height: "32px", padding: "0 14px", borderRadius: "16px", border: "none", background: "#1F6B2A", color: "#fff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
                     >
@@ -569,6 +598,12 @@ export default function NoticesPage() {
                 <div style={{ position: "absolute", top: "16px", right: "16px", display: "flex", gap: "8px" }}>
                   {isAdmin && selectedNotice.status === "draft" ? (
                     <>
+                      <button
+                        onClick={() => copyForNaver(selectedNotice)}
+                        style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "#03c75a", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
+                      >
+                        📋 네이버용 복사
+                      </button>
                       <button
                         onClick={() => handleReview(selectedNotice, "publish")}
                         style={{ height: "36px", padding: "0 14px", borderRadius: "18px", border: "none", background: "rgba(31,107,42,0.9)", color: "#ffffff", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}
