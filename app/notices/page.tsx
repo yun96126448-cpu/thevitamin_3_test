@@ -28,6 +28,37 @@ function pickServiceCTA(notice: Notice): { url: string; blurb: string } {
   return { url: `${SITE_URL}/visit-care`, blurb: "거동이 불편한 어르신, 집에서 편안하게 돌봄받으실 수 있도록 더비타민 재가복지센터가 따뜻하게 함께하겠습니다." };
 }
 
+// 글 내용 기반 자동 해시태그 생성
+function generateHashtags(notice: Notice): string[] {
+  const text = `${notice.title} ${notice.content ?? ""}`.toLowerCase();
+  const tags = new Set<string>();
+
+  const tagMap = [
+    { keyword: /복지용구/, tags: ["복지용구", "지원"] },
+    { keyword: /가족요양/, tags: ["가족요양", "급여"] },
+    { keyword: /간병/, tags: ["간병", "서비스"] },
+    { keyword: /방문요양/, tags: ["방문요양", "돌봄"] },
+    { keyword: /(노인|어르신)/, tags: ["노인돌봄"] },
+    { keyword: /건강/, tags: ["건강", "정보"] },
+    { keyword: /지원금|지원/, tags: ["지원금"] },
+    { keyword: /신청|접수/, tags: ["신청안내"] },
+  ];
+
+  tagMap.forEach(({ keyword, tags: tagList }) => {
+    if (keyword.test(text)) {
+      tagList.forEach((tag) => tags.add(tag));
+    }
+  });
+
+  // 태그가 없으면 기본 태그
+  if (tags.size === 0) {
+    tags.add("더비타민");
+    if (notice.category) tags.add(notice.category);
+  }
+
+  return Array.from(tags).slice(0, 5); // 최대 5개까지만
+}
+
 type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
 type FormState = { category: string; title: string; content: string; bgImage: string; repImage: string };
 
@@ -125,15 +156,20 @@ export default function NoticesPage() {
     // 출처 문단 위 3줄
     styled = styled.replace(/(<p style="[^"]*">\s*출처)/, `${BLANK}${BLANK}${BLANK}$1`);
 
+    // 자동 생성 해시태그
+    const hashtags = generateHashtags(notice);
+    const tagsHtml = `${BLANK}<p style="font-size:16px;color:#1F6B2A;line-height:1.9;margin:0;">${hashtags.map((tag) => `#${tag}`).join(" ")}</p>`;
+
     // 맨 아래 홈페이지 CTA (글 주제에 맞는 서비스 페이지로 연결)
     const cta = pickServiceCTA(notice);
     const ctaHtml = `${BLANK}${BLANK}<p style="font-size:16px;color:#000000;line-height:1.9;background:#f2f8f3;border:1px solid #cfe6d5;border-radius:12px;padding:18px 20px;margin:0;">${cta.blurb}<br><a href="${cta.url}" style="color:#1F6B2A;font-weight:700;">▶ 더비타민 재가복지센터 홈페이지에서 상담·신청하기</a></p>`;
 
     const titleHtml = `<p style="font-size:26px;font-weight:800;color:#000000;line-height:1.4;margin:0 0 20px;">${notice.title}</p>`;
-    const html = `<div style="color:#000000;font-family:'맑은 고딕','Malgun Gothic',sans-serif;">${titleHtml}${styled}${ctaHtml}</div>`;
+    const html = `<div style="color:#000000;font-family:'맑은 고딕','Malgun Gothic',sans-serif;">${titleHtml}${styled}${tagsHtml}${ctaHtml}</div>`;
 
     // 서식 없는 순수 텍스트 대체본 (에디터가 HTML 못 받을 때 대비)
-    const plain = `${notice.title}\n\n${(notice.content ?? "").replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim()}\n\n\n${cta.blurb}\n▶ 더비타민 재가복지센터 홈페이지에서 상담·신청하기: ${cta.url}`;
+    const tagsPlain = hashtags.map((tag) => `#${tag}`).join(" ");
+    const plain = `${notice.title}\n\n${(notice.content ?? "").replace(/<[^>]+>/g, "").replace(/\n{3,}/g, "\n\n").trim()}\n\n${tagsPlain}\n\n\n${cta.blurb}\n▶ 더비타민 재가복지센터 홈페이지에서 상담·신청하기: ${cta.url}`;
 
     try {
       if (navigator.clipboard && "write" in navigator.clipboard && typeof ClipboardItem !== "undefined") {
