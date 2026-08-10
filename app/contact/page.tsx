@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const serviceOptions = ["방문요양", "가족요양", "복지용구", "간병인협회", "기타"];
@@ -17,9 +17,6 @@ const gradeOptions = [
 ];
 
 export default function ContactPage() {
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -29,32 +26,13 @@ export default function ContactPage() {
     message: "",
   });
 
-  const resetForm = () =>
-    setForm({ name: "", phone: "", email: "", serviceType: "", grade: "", message: "" });
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setSubmitting(true);
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          phone: form.phone,
-          topics: [form.serviceType, form.grade].filter(Boolean),
-          message: form.message,
-        }),
-      });
-      if (!res.ok) throw new Error("전송 실패");
-      setSubmitted(true);
-    } catch {
-      setError("문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-    } finally {
-      setSubmitting(false);
-    }
+    alert(
+      "죄송합니다. 현재 온라인 문의 접수가 어렵습니다.\n" +
+        "번거로우시더라도 아래 번호로 전화 주시면 친절하게 상담해 드리겠습니다.\n\n" +
+        "☎ 061-242-3536"
+    );
   };
 
   return (
@@ -64,27 +42,7 @@ export default function ContactPage() {
           {/* 문의 폼 카드 */}
           <div className="order-2 lg:order-1 w-full lg:w-[46%] shrink-0">
             <div className="border border-gray-200 rounded-2xl p-6 sm:p-8">
-              {submitted ? (
-                <div className="min-h-[480px] flex flex-col items-center justify-center text-center">
-                  <CheckCircle2 size={52} className="text-brand-green mb-4" />
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">
-                    문의가 접수되었습니다
-                  </h2>
-                  <p className="text-sm text-gray-500 mb-6 max-w-xs">
-                    담당자 확인 후 입력하신 연락처로 빠르게 연락드리겠습니다.
-                  </p>
-                  <Button
-                    onClick={() => {
-                      setSubmitted(false);
-                      resetForm();
-                    }}
-                    variant="outline"
-                  >
-                    새 문의 작성
-                  </Button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <form onSubmit={handleSubmit} className="flex flex-col gap-5">
                   <div>
                     <label className="block text-[11px] font-medium uppercase tracking-widest text-gray-400 mb-2">
                       성함
@@ -189,13 +147,10 @@ export default function ContactPage() {
                     />
                   </div>
 
-                  {error && <p className="text-sm text-red-500">{error}</p>}
-
-                  <Button type="submit" size="lg" className="w-full" disabled={submitting}>
-                    {submitting ? "전송 중..." : "문의 보내기"}
+                  <Button type="submit" size="lg" className="w-full">
+                    문의 보내기
                   </Button>
                 </form>
-              )}
             </div>
           </div>
 
