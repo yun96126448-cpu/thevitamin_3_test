@@ -31,56 +31,64 @@ function pickServiceCTA(notice: Notice): { url: string; blurb: string } {
 // 글 내용 기반 자동 해시태그 생성 (동적 10개 + 기본 20개 = 최대 30개)
 function generateHashtags(notice: Notice): string[] {
   const text = `${notice.title} ${notice.content ?? ""}`.toLowerCase();
-  const dynamicTags = new Set<string>();
+  const tags = new Set<string>();
 
-  // 동적 키워드 (제목/내용 분석) — 최대 10개
-  const dynamicMap = [
-    { keyword: /복지용구/, tags: ["복지용구", "용구지원"] },
-    { keyword: /가족요양/, tags: ["가족요양", "급여", "가족요양사"] },
-    { keyword: /간병/, tags: ["간병", "간병인", "간병서비스"] },
-    { keyword: /방문요양/, tags: ["방문요양", "방문서비스", "돌봄"] },
-    { keyword: /(노인|어르신)/, tags: ["노인돌봄", "노인복지"] },
-    { keyword: /건강/, tags: ["건강정보", "건강"] },
-    { keyword: /지원금|지원|급여/, tags: ["지원금", "급여안내"] },
-    { keyword: /신청|접수|모집/, tags: ["신청안내", "모집공고"] },
-  ];
-
-  dynamicMap.forEach(({ keyword, tags: tagList }) => {
-    if (keyword.test(text)) {
-      tagList.forEach((tag) => {
-        if (dynamicTags.size < 10) dynamicTags.add(tag);
-      });
-    }
-  });
-
-  // 재가복지 기본 키워드 20개 (항상 포함)
+  // 기본 해시태그 (항상 포함)
   const baseTags = [
     "재가복지",
-    "재가복지센터",
-    "목포",
-    "광주",
-    "비타민",
-    "더비타민",
-    "방문요양",
-    "간병",
-    "가족요양",
+    "목포재가복지",
+    "비타민재가복지",
+    "더비타민재가복지",
+    "광주재가복지",
     "복지용구",
-    "돌봄서비스",
-    "요양보호사",
-    "간병인",
-    "가족요양사",
-    "노인복지",
-    "장기요양보험",
-    "신청안내",
-    "장애인복지",
-    "재가서비스",
-    "요양시설",
+    "더비타민복지용구",
+    "비타민복지용구",
   ];
 
-  const allTags = Array.from(dynamicTags).concat(baseTags);
-  const uniqueTags = Array.from(new Set(allTags)); // 중복 제거
+  baseTags.forEach((tag) => tags.add(tag));
 
-  return uniqueTags.slice(0, 30); // 최대 30개
+  // 동적 태그 (제목/내용 분석)
+  if (/방문요양|방문/.test(text)) {
+    ["방문요양", "목포방문요양", "비타민방문요양", "더비타민방문요양"].forEach((tag) => tags.add(tag));
+  }
+
+  if (/간병/.test(text)) {
+    ["간병", "간병인", "간병인협회", "목포간병", "목포간병인", "목포간병인협회", "비타민간병", "비타민간병인", "더비타민간병", "더비타민간병인"].forEach((tag) => {
+      if (tags.size < 30) tags.add(tag);
+    });
+  }
+
+  if (/가족요양/.test(text)) {
+    ["가족요양", "목포가족요양", "비타민가족요양", "더비타민가족요양"].forEach((tag) => {
+      if (tags.size < 30) tags.add(tag);
+    });
+  }
+
+  if (/요양보호|요양사/.test(text)) {
+    ["요양보호사", "요양사"].forEach((tag) => {
+      if (tags.size < 30) tags.add(tag);
+    });
+  }
+
+  if (/(노인|어르신|돌봄)/.test(text)) {
+    ["노인복지", "돌봄서비스", "재가서비스"].forEach((tag) => {
+      if (tags.size < 30) tags.add(tag);
+    });
+  }
+
+  if (/(신청|접수|모집)/.test(text)) {
+    ["신청안내", "모집공고"].forEach((tag) => {
+      if (tags.size < 30) tags.add(tag);
+    });
+  }
+
+  if (/건강|정보/.test(text)) {
+    ["건강정보", "복지정보"].forEach((tag) => {
+      if (tags.size < 30) tags.add(tag);
+    });
+  }
+
+  return Array.from(tags).slice(0, 30); // 최대 30개
 }
 
 type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
