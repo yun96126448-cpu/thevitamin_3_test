@@ -34,14 +34,19 @@ function generateHashtags(notice: Notice): string[] {
   const tags = new Set<string>();
 
   const tagMap = [
+    // 서비스 키워드
     { keyword: /복지용구/, tags: ["복지용구", "지원"] },
-    { keyword: /가족요양/, tags: ["가족요양", "급여"] },
-    { keyword: /간병/, tags: ["간병", "서비스"] },
-    { keyword: /방문요양/, tags: ["방문요양", "돌봄"] },
-    { keyword: /(노인|어르신)/, tags: ["노인돌봄"] },
+    { keyword: /가족요양/, tags: ["가족요양", "급여", "가족요양사"] },
+    { keyword: /간병/, tags: ["간병", "간병인", "간병서비스"] },
+    { keyword: /방문요양/, tags: ["방문요양", "방문서비스", "돌봄"] },
+    { keyword: /(노인|어르신)/, tags: ["노인돌봄", "노인복지", "요양보호사"] },
     { keyword: /건강/, tags: ["건강", "정보"] },
-    { keyword: /지원금|지원/, tags: ["지원금"] },
+    { keyword: /지원금|지원/, tags: ["지원금", "장기요양보험"] },
     { keyword: /신청|접수/, tags: ["신청안내"] },
+    // 지역 키워드
+    { keyword: /목포/, tags: ["목포", "목포재가복지", "목포방문요양", "목포간병", "목포간병인", "목포가족요양"] },
+    { keyword: /광주/, tags: ["광주", "광주재가복지"] },
+    { keyword: /비타민/, tags: ["비타민", "비타민재가복지", "더비타민"] },
   ];
 
   tagMap.forEach(({ keyword, tags: tagList }) => {
@@ -50,13 +55,16 @@ function generateHashtags(notice: Notice): string[] {
     }
   });
 
-  // 태그가 없으면 기본 태그
-  if (tags.size === 0) {
+  // 기본 태그
+  tags.add("재가복지");
+  if (notice.category) tags.add(notice.category);
+
+  // 태그가 너무 적으면 기본값 추가
+  if (tags.size < 3) {
     tags.add("더비타민");
-    if (notice.category) tags.add(notice.category);
   }
 
-  return Array.from(tags).slice(0, 5); // 최대 5개까지만
+  return Array.from(tags).slice(0, 8); // 최대 8개까지
 }
 
 type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
