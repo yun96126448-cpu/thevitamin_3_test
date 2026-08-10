@@ -28,67 +28,73 @@ function pickServiceCTA(notice: Notice): { url: string; blurb: string } {
   return { url: `${SITE_URL}/visit-care`, blurb: "거동이 불편한 어르신, 집에서 편안하게 돌봄받으실 수 있도록 더비타민 재가복지센터가 따뜻하게 함께하겠습니다." };
 }
 
-// 글 내용 기반 자동 해시태그 생성 (동적 10개 + 기본 20개 = 최대 30개)
+// 글 내용 기반 자동 해시태그 생성 (기본 20개 + 글 관련 동적 10개 = 최대 30개)
 function generateHashtags(notice: Notice): string[] {
   const text = `${notice.title} ${notice.content ?? ""}`.toLowerCase();
-  const tags = new Set<string>();
 
-  // 기본 해시태그 (항상 포함)
+  // 기본 해시태그 20개 (항상 포함)
   const baseTags = [
-    "재가복지",
     "목포재가복지",
+    "재가복지",
+    "목포방문요양",
+    "방문요양",
+    "간병인",
+    "간병인협회",
+    "목포간병인",
+    "목포간병인협회",
     "비타민재가복지",
     "더비타민재가복지",
-    "광주재가복지",
+    "비타민방문요양",
+    "더비타민방문요양",
+    "비타민간병",
+    "비타민간병인",
+    "더비타민간병",
+    "더비타민간병인",
     "복지용구",
+    "복지기구",
     "더비타민복지용구",
     "비타민복지용구",
   ];
 
-  baseTags.forEach((tag) => tags.add(tag));
+  const tags = new Set<string>(baseTags);
 
-  // 동적 태그 (제목/내용 분석)
-  if (/방문요양|방문/.test(text)) {
-    ["방문요양", "목포방문요양", "비타민방문요양", "더비타민방문요양"].forEach((tag) => tags.add(tag));
-  }
+  // 글과 관련된 동적 해시태그 10개 추가
+  const dynamicTags = new Set<string>();
 
-  if (/간병/.test(text)) {
-    ["간병", "간병인", "간병인협회", "목포간병", "목포간병인", "목포간병인협회", "비타민간병", "비타민간병인", "더비타민간병", "더비타민간병인"].forEach((tag) => {
-      if (tags.size < 30) tags.add(tag);
-    });
-  }
+  // 제목에서 주요 단어 추출
+  const titleWords = notice.title.split(/\s+/).filter((w) => w.length > 2);
+  titleWords.forEach((word) => {
+    if (dynamicTags.size < 10 && word.length > 2) {
+      dynamicTags.add(word);
+    }
+  });
 
-  if (/가족요양/.test(text)) {
-    ["가족요양", "목포가족요양", "비타민가족요양", "더비타민가족요양"].forEach((tag) => {
-      if (tags.size < 30) tags.add(tag);
-    });
-  }
+  // 주요 키워드 기반 태그 추가
+  const keywordTags: { [key: string]: string } = {
+    "가족요양": "가족요양",
+    "요양보호": "요양보호사",
+    "노인": "노인복지",
+    "어르신": "어르신돌봄",
+    "건강": "건강정보",
+    "신청": "신청안내",
+    "모집": "모집공고",
+    "지원": "지원금",
+    "급여": "급여안내",
+    "프로그램": "프로그램안내",
+  };
 
-  if (/요양보호|요양사/.test(text)) {
-    ["요양보호사", "요양사"].forEach((tag) => {
-      if (tags.size < 30) tags.add(tag);
-    });
-  }
+  Object.entries(keywordTags).forEach(([keyword, tag]) => {
+    if (text.includes(keyword) && dynamicTags.size < 10) {
+      dynamicTags.add(tag);
+    }
+  });
 
-  if (/(노인|어르신|돌봄)/.test(text)) {
-    ["노인복지", "돌봄서비스", "재가서비스"].forEach((tag) => {
-      if (tags.size < 30) tags.add(tag);
-    });
-  }
+  // 동적 태그를 기본 태그에 추가
+  dynamicTags.forEach((tag) => {
+    if (tags.size < 30) tags.add(tag);
+  });
 
-  if (/(신청|접수|모집)/.test(text)) {
-    ["신청안내", "모집공고"].forEach((tag) => {
-      if (tags.size < 30) tags.add(tag);
-    });
-  }
-
-  if (/건강|정보/.test(text)) {
-    ["건강정보", "복지정보"].forEach((tag) => {
-      if (tags.size < 30) tags.add(tag);
-    });
-  }
-
-  return Array.from(tags).slice(0, 30); // 최대 30개
+  return Array.from(tags).slice(0, 30);
 }
 
 type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
