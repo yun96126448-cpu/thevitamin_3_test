@@ -28,43 +28,59 @@ function pickServiceCTA(notice: Notice): { url: string; blurb: string } {
   return { url: `${SITE_URL}/visit-care`, blurb: "거동이 불편한 어르신, 집에서 편안하게 돌봄받으실 수 있도록 더비타민 재가복지센터가 따뜻하게 함께하겠습니다." };
 }
 
-// 글 내용 기반 자동 해시태그 생성
+// 글 내용 기반 자동 해시태그 생성 (동적 10개 + 기본 20개 = 최대 30개)
 function generateHashtags(notice: Notice): string[] {
   const text = `${notice.title} ${notice.content ?? ""}`.toLowerCase();
-  const tags = new Set<string>();
+  const dynamicTags = new Set<string>();
 
-  const tagMap = [
-    // 서비스 키워드
-    { keyword: /복지용구/, tags: ["복지용구", "지원"] },
+  // 동적 키워드 (제목/내용 분석) — 최대 10개
+  const dynamicMap = [
+    { keyword: /복지용구/, tags: ["복지용구", "용구지원"] },
     { keyword: /가족요양/, tags: ["가족요양", "급여", "가족요양사"] },
     { keyword: /간병/, tags: ["간병", "간병인", "간병서비스"] },
     { keyword: /방문요양/, tags: ["방문요양", "방문서비스", "돌봄"] },
-    { keyword: /(노인|어르신)/, tags: ["노인돌봄", "노인복지", "요양보호사"] },
-    { keyword: /건강/, tags: ["건강", "정보"] },
-    { keyword: /지원금|지원/, tags: ["지원금", "장기요양보험"] },
-    { keyword: /신청|접수/, tags: ["신청안내"] },
-    // 지역 키워드
-    { keyword: /목포/, tags: ["목포", "목포재가복지", "목포방문요양", "목포간병", "목포간병인", "목포가족요양"] },
-    { keyword: /광주/, tags: ["광주", "광주재가복지"] },
-    { keyword: /비타민/, tags: ["비타민", "비타민재가복지", "더비타민"] },
+    { keyword: /(노인|어르신)/, tags: ["노인돌봄", "노인복지"] },
+    { keyword: /건강/, tags: ["건강정보", "건강"] },
+    { keyword: /지원금|지원|급여/, tags: ["지원금", "급여안내"] },
+    { keyword: /신청|접수|모집/, tags: ["신청안내", "모집공고"] },
   ];
 
-  tagMap.forEach(({ keyword, tags: tagList }) => {
+  dynamicMap.forEach(({ keyword, tags: tagList }) => {
     if (keyword.test(text)) {
-      tagList.forEach((tag) => tags.add(tag));
+      tagList.forEach((tag) => {
+        if (dynamicTags.size < 10) dynamicTags.add(tag);
+      });
     }
   });
 
-  // 기본 태그
-  tags.add("재가복지");
-  if (notice.category) tags.add(notice.category);
+  // 재가복지 기본 키워드 20개 (항상 포함)
+  const baseTags = [
+    "재가복지",
+    "재가복지센터",
+    "목포",
+    "광주",
+    "비타민",
+    "더비타민",
+    "방문요양",
+    "간병",
+    "가족요양",
+    "복지용구",
+    "돌봄서비스",
+    "요양보호사",
+    "간병인",
+    "가족요양사",
+    "노인복지",
+    "장기요양보험",
+    "신청안내",
+    "장애인복지",
+    "재가서비스",
+    "요양시설",
+  ];
 
-  // 태그가 너무 적으면 기본값 추가
-  if (tags.size < 3) {
-    tags.add("더비타민");
-  }
+  const allTags = Array.from(dynamicTags).concat(baseTags);
+  const uniqueTags = Array.from(new Set(allTags)); // 중복 제거
 
-  return Array.from(tags).slice(0, 8); // 최대 8개까지
+  return uniqueTags.slice(0, 30); // 최대 30개
 }
 
 type Notice = { id: number; category: string; title: string; date: string; bg: string; thumbnail?: string; content?: string; author_email?: string; status?: string };
