@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,14 +7,51 @@ import TargetsGrid from "@/components/shared/TargetsGrid";
 import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
 import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "복지용구 | 더비타민 비타민재가복지센터",
-  description:
-    "더비타민 비타민재가복지센터 복지용구 대여·구입. 수동 휠체어, 전동 침대, 욕창 예방 매트리스, 보행 보조기 등 장기요양보험 급여 품목을 지원합니다. 목포, 광주, 전남 전역 서비스. 상담 061-242-3536",
-  keywords: ["복지용구", "더비타민", "더 비타민", "비타민재가", "휠체어", "전동침대", "장기요양"],
-  alternates: { canonical: "/welfare-equipment" },
+interface Props {
+  params: { location: string };
+}
+
+const locationMap: Record<string, { nameKo: string; region: string }> = {
+  mokpo: { nameKo: "목포", region: "전라남도" },
+  gwangju: { nameKo: "광주", region: "광주광역시" },
+  jeonnam: { nameKo: "전라남도", region: "전라남도" },
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const loc = locationMap[params.location];
+  if (!loc) return {};
+
+  const title = `${loc.nameKo} 복지용구 | 더비타민 비타민재가복지센터`;
+  const description = `${loc.region}에서 더비타민 비타민재가복지센터가 제공하는 복지용구 대여·구입 서비스. 휠체어, 전동침대, 욕창 예방 매트리스 등 장기요양보험 급여 품목을 지원합니다. 상담 061-242-3536`;
+
+  const url = `${SITE_URL}/welfare-equipment/${params.location}`;
+
+  return {
+    title,
+    description,
+    keywords: [`${loc.nameKo} 복지용구`, "더비타민", "비타민재가", "휠체어", "복지용구"],
+    alternates: { canonical: `/welfare-equipment/${params.location}` },
+    openGraph: {
+      type: "website",
+      locale: "ko_KR",
+      url,
+      siteName: "더비타민 재가복지센터",
+      title,
+      description,
+      images: [{ url: "/hero.png", width: 1200, height: 630, alt: title }],
+    },
+  };
+}
+
+export async function generateStaticParams() {
+  return [
+    { location: "mokpo" },
+    { location: "gwangju" },
+    { location: "jeonnam" },
+  ];
+}
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",
@@ -43,38 +81,36 @@ const serviceCategories = [
 const applySteps = [
   {
     title: "등급 확인",
-    desc:
-      "장기요양 1~5등급 또는 인지지원등급을 받으셨는지 먼저 확인합니다. 등급이 없으시다면 국민건강보험공단 신청부터 함께 안내해 드립니다.",
+    desc: "장기요양 1~5등급 또는 인지지원등급을 받으셨는지 먼저 확인합니다.",
   },
   {
     title: "품목 선택",
-    desc:
-      "어르신의 생활 환경과 신체 상태에 맞는 복지용구를 상담을 통해 선택합니다. 대여와 구매 품목의 차이, 이용 기간과 비용까지 이해하기 쉽게 설명해 드립니다.",
+    desc: "어르신의 생활 환경과 신체 상태에 맞는 복지용구를 상담을 통해 선택합니다.",
   },
   {
     title: "급여 신청",
-    desc:
-      "국민건강보험공단 또는 센터를 통해 복지용구 급여를 신청합니다. 연간 한도액과 본인부담률을 미리 안내해 드려 예상 밖의 비용 부담이 없도록 돕습니다.",
+    desc: "국민건강보험공단 또는 센터를 통해 복지용구 급여를 신청합니다.",
   },
   {
     title: "이용 시작",
-    desc:
-      "선택하신 품목을 납품·설치해 드리고, 사용 방법까지 꼼꼼히 안내합니다. 사용 중 불편한 점이나 교체가 필요하면 언제든 연락 주세요.",
+    desc: "선택하신 품목을 납품·설치해 드리고, 사용 방법까지 꼼꼼히 안내합니다.",
   },
 ];
 
-export default function WelfareEquipment() {
+export default function LocationWelfareEquipment({ params }: Props) {
+  const loc = locationMap[params.location];
+  if (!loc) notFound();
+
   return (
     <div className="min-h-screen">
-      {/* 히어로 - 클린 화이트 */}
       <div className="text-center px-6 py-20 sm:py-28">
         <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-black text-gray-900 leading-[1.05] tracking-normal mb-7 max-w-2xl mx-auto">
-          복지용구란?
+          {loc.nameKo} 복지용구
         </h1>
         <p className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto mb-10">
-          복지용구는 심신 기능이 저하된 수급자의 일상생활·신체활동 지원 및 인지기능 유지·개선을 위해
-          필요한 용구를 구입하거나 대여해 드리는 장기요양 급여입니다. 연간 160만원 한도 내에서
-          본인부담 15%로 부담 없이 이용하실 수 있습니다.
+          {loc.region}에서 더비타민 비타민재가복지센터가 제공하는 복지용구 서비스입니다.
+          <br />
+          휠체어, 전동침대, 보행 보조기 등을 대여·구입해 드립니다.
         </p>
         <a
           href="tel:061-242-3536"
@@ -84,7 +120,6 @@ export default function WelfareEquipment() {
         </a>
       </div>
 
-      {/* 이미지 섹션 */}
       <div className="pb-20 flex justify-center px-4 sm:px-6 lg:px-8">
         <img
           src="/welfare-home.png"
@@ -94,7 +129,6 @@ export default function WelfareEquipment() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-        {/* 서비스 대상 */}
         <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
             서비스 대상
@@ -102,7 +136,6 @@ export default function WelfareEquipment() {
           <TargetsGrid targets={targets} />
         </Reveal>
 
-        {/* 주요 지원 품목 */}
         <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
             주요 지원 품목
@@ -110,18 +143,16 @@ export default function WelfareEquipment() {
           <ServiceExpandCards categories={serviceCategories} />
         </Reveal>
 
-        {/* 이용 방법 */}
         <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
-          <ApplyStepsAccordion title="이용 방법" steps={applySteps} />
+          <ApplyStepsAccordion steps={applySteps} />
         </Reveal>
 
-        {/* CTA */}
         <Reveal className="py-20 sm:py-28 text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
             궁금하신 점이 있으신가요?
           </h2>
           <p className="mb-10 text-gray-500 text-base sm:text-lg">
-            필요한 복지용구 선택부터 신청까지, 전화 또는 온라인으로 문의해 주세요.
+            {loc.nameKo} 지역의 복지용구 서비스에 관해 전화 또는 온라인으로 문의해 주세요.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button

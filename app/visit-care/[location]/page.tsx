@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,14 +7,52 @@ import TargetsGrid from "@/components/shared/TargetsGrid";
 import ServiceExpandCards from "@/components/shared/ServiceExpandCards";
 import ApplyStepsAccordion from "@/components/shared/ApplyStepsAccordion";
 import type { Metadata } from "next";
+import { getLocationBySlug } from "@/lib/locations";
+import { SITE_URL } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "방문요양 | 더비타민 비타민재가복지센터",
-  description:
-    "더비타민 비타민재가복지센터 방문요양 서비스. 요양보호사가 가정을 방문해 신체활동·가사활동을 지원합니다. 목포, 광주, 전남 전역 서비스. 장기요양 1~5등급 어르신 대상, 상담 061-242-3536",
-  keywords: ["방문요양", "더비타민", "더 비타민", "비타민재가", "재가복지센터", "요양보호사", "목포 방문요양"],
-  alternates: { canonical: "/visit-care" },
+interface Props {
+  params: { location: string };
+}
+
+const locationMap: Record<string, { nameKo: string; region: string; serviceArea: string }> = {
+  mokpo: { nameKo: "목포", region: "전라남도", serviceArea: "목포시" },
+  gwangju: { nameKo: "광주", region: "광주광역시", serviceArea: "광주광역시" },
+  jeonnam: { nameKo: "전라남도", region: "전라남도", serviceArea: "전라남도" },
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const loc = locationMap[params.location];
+  if (!loc) return {};
+
+  const title = `${loc.nameKo} 방문요양 | 더비타민 비타민재가복지센터`;
+  const description = `${loc.region}에서 더비타민 비타민재가복지센터가 제공하는 방문요양 서비스. 요양보호사가 어르신 가정을 방문하여 신체활동·가사활동을 지원합니다. 상담 061-242-3536`;
+
+  const url = `${SITE_URL}/visit-care/${params.location}`;
+
+  return {
+    title,
+    description,
+    keywords: [`${loc.nameKo} 방문요양`, "더비타민", "비타민재가", "방문요양", "재가복지센터"],
+    alternates: { canonical: `/visit-care/${params.location}` },
+    openGraph: {
+      type: "website",
+      locale: "ko_KR",
+      url,
+      siteName: "더비타민 재가복지센터",
+      title,
+      description,
+      images: [{ url: "/hero.png", width: 1200, height: 630, alt: title }],
+    },
+  };
+}
+
+export async function generateStaticParams() {
+  return [
+    { location: "mokpo" },
+    { location: "gwangju" },
+    { location: "jeonnam" },
+  ];
+}
 
 const targets = [
   "장기요양 1~5등급 판정을 받은 어르신",
@@ -63,18 +102,20 @@ const applySteps = [
   },
 ];
 
-export default function VisitCare() {
+export default function LocationVisitCare({ params }: Props) {
+  const loc = locationMap[params.location];
+  if (!loc) notFound();
+
   return (
     <div className="min-h-screen">
-      {/* 히어로 - 클린 화이트 */}
       <div className="text-center px-6 py-20 sm:py-28">
         <h1 className="text-5xl sm:text-6xl lg:text-[72px] font-black text-gray-900 leading-[1.05] tracking-normal mb-7 max-w-2xl mx-auto">
-          방문요양이란?
+          {loc.nameKo} 방문요양
         </h1>
         <p className="text-gray-500 text-lg leading-relaxed max-w-2xl mx-auto mb-10">
-          방문요양은 장기요양기관에 소속된 요양보호사가 수급자의 가정을 방문하여
-          신체활동 및 가사활동 등의 서비스를 제공하는 장기요양 급여입니다.
-          어르신이 익숙한 집에서 편안하게 생활하실 수 있도록 전문적인 돌봄 서비스를 제공합니다.
+          {loc.region}에서 더비타민 비타민재가복지센터가 제공하는 방문요양 서비스입니다.
+          <br />
+          전문 요양보호사가 어르신의 가정을 방문하여 신체활동·가사활동을 지원합니다.
         </p>
         <a
           href="tel:061-242-3536"
@@ -84,7 +125,6 @@ export default function VisitCare() {
         </a>
       </div>
 
-      {/* 이미지 섹션 */}
       <div className="pb-20 flex justify-center px-4 sm:px-6 lg:px-8">
         <img
           src="/방문요양_home_clean.png"
@@ -94,7 +134,6 @@ export default function VisitCare() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 space-y-8">
-        {/* 서비스 대상 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
         <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4 tracking-[0]">
             서비스 대상
@@ -102,7 +141,6 @@ export default function VisitCare() {
           <TargetsGrid targets={targets} />
         </Reveal>
 
-        {/* 제공 서비스 내용 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
         <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-6 md:mb-4">
             제공 서비스 내용
@@ -110,18 +148,16 @@ export default function VisitCare() {
           <ServiceExpandCards categories={serviceCategories} />
         </Reveal>
 
-        {/* 신청 방법 : 화면 한 페이지 꽉 채우고 스크롤 진입 시 페이드인 */}
         <Reveal className="flex flex-col justify-center min-h-[calc(100dvh-4rem)]">
           <ApplyStepsAccordion steps={applySteps} />
         </Reveal>
 
-        {/* CTA */}
         <Reveal className="py-20 sm:py-28 text-center">
           <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-6">
             궁금하신 점이 있으신가요?
           </h2>
           <p className="mb-10 text-gray-500 text-base sm:text-lg">
-            방문요양 서비스에 관한 자세한 내용은 전화 또는 온라인으로 문의해 주세요.
+            {loc.nameKo} 지역의 방문요양 서비스에 관해 전화 또는 온라인으로 문의해 주세요.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button
